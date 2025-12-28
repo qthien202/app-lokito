@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lokito/core/constants/app_routes.dart';
-import 'package:lokito/features/auth/presentation/widgets/auth_background.dart';
-import 'package:lokito/features/auth/presentation/widgets/primary_button.dart';
+import 'package:lokito/core/core.dart';
 import 'package:lokito/features/onboarding/domain/onboarding_item.dart';
 import 'package:lokito/features/onboarding/presentation/widgets/onboarding_page.dart';
 import 'package:lokito/l10n/app_localizations.dart';
@@ -50,7 +49,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final items = _getItems(l10n);
 
     return Scaffold(
-      body: AuthBackground(
+      body: AppBackground(
         child: Column(
           children: [
             _buildTopBar(context, theme, l10n),

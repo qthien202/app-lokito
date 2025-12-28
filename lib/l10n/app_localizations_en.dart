@@ -85,4 +85,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboarding3Subtitle =>
       'Get notified instantly when your friends share something new.';
+
+  @override
+  String get verifyEmail => 'Verify\nEmail';
+
+  @override
+  String verifySubtitle(Object email) {
+    return 'We\'ve sent a 6-digit code to $email';
+  }
+
+  @override
+  String get otpHint => '000000';
+
+  @override
+  String get verify => 'Verify';
+
+  @override
+  String get resendCode => 'Resend Code';
+
+  @override
+  String get invalidOtp => 'Invalid OTP. Please try again.';
+
+  @override
+  String get otpSent => 'OTP sent successfully!';
 }

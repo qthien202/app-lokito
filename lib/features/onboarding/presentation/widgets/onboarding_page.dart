@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:lokito/features/onboarding/domain/onboarding_item.dart';
+import 'package:lottie/lottie.dart';
 
 class OnboardingPage extends StatelessWidget {
   final OnboardingItem item;
@@ -46,8 +46,7 @@ class OnboardingPage extends StatelessWidget {
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w900,
                 color: theme.colorScheme.onSurface,
-                height: 1.1,
-                letterSpacing: -1.0,
+                height: 1.3,
               ),
             ),
             const SizedBox(height: 12),
