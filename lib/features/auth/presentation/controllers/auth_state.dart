@@ -9,5 +9,8 @@ abstract class AuthState with _$AuthState {
     UserModel? user,
     required bool isLoading,
     String? error,
+    @Default(false) bool isInitialized,
+    @Default(false) bool isVerificationRequired,
+    String? verificationEmail,
   }) = _AuthState;
 }

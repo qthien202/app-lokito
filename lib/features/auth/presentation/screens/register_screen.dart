@@ -3,13 +3,10 @@ import 'package:lokito/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lokito/core/constants/app_routes.dart';
+import 'package:lokito/core/core.dart';
 import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:lokito/features/auth/presentation/widgets/auth_background.dart';
 import 'package:lokito/features/auth/presentation/widgets/auth_footer.dart';
 import 'package:lokito/features/auth/presentation/widgets/auth_header.dart';
-import 'package:lokito/features/auth/presentation/widgets/custom_text_field.dart';
-import 'package:lokito/features/auth/presentation/widgets/glass_card.dart';
-import 'package:lokito/features/auth/presentation/widgets/primary_button.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   static const path = '/register';
@@ -51,13 +48,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     ref.listen(authControllerProvider, (previous, next) {
       if (next.error != null && !next.isLoading) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.error!),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        SnackbarUtils.showError(context, next.error!);
         ref.read(authControllerProvider.notifier).clearError();
+      }
+
+      if (next.isVerificationRequired && !next.isLoading) {
+        context.push(AppRoutes.otp, extra: _usernameController.text.trim());
       }
     });
 
@@ -72,10 +68,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           onPressed: () => context.pushReplacement(AppRoutes.login),
         ),
       ),
-      body: AuthBackground(
+      body: AppBackground(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 40),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
@@ -87,6 +83,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const SizedBox(height: 48),
                   GlassCard(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 24,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(

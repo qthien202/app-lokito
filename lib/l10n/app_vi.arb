@@ -24,5 +24,12 @@
   "onboarding2Title": "Chia sẻ\nKhoảnh khắc",
   "onboarding2Subtitle": "Ghi lại và chia sẻ cuộc sống hàng ngày với vòng bạn bè của bạn.",
   "onboarding3Title": "Cập nhật\nThời gian thực",
-  "onboarding3Subtitle": "Nhận thông báo ngay lập tức khi bạn bè chia sẻ điều gì đó mới."
+  "onboarding3Subtitle": "Nhận thông báo ngay lập tức khi bạn bè chia sẻ điều gì đó mới.",
+  "verifyEmail": "Xác thực\nEmail",
+  "verifySubtitle": "Chúng tôi đã gửi mã 6 số tới {email}",
+  "otpHint": "000000",
+  "verify": "Xác nhận",
+  "resendCode": "Gửi lại mã",
+  "invalidOtp": "Mã OTP không đúng. Vui lòng thử lại.",
+  "otpSent": "Đã gửi lại mã OTP thành công!"
 }

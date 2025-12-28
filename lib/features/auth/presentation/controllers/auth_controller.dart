@@ -14,7 +14,7 @@ class AuthController extends Notifier<AuthState> {
   @override
   AuthState build() {
     _repository = ref.watch(authRepositoryProvider);
-    state = const AuthState(isLoading: true);
+    state = const AuthState(isLoading: false);
 
     _authSubscription = _repository.authStateChanges.listen((data) {
       final sb.AuthChangeEvent event = data.event;
@@ -39,14 +39,25 @@ class AuthController extends Notifier<AuthState> {
     if (authUser != null) {
       try {
         final user = await _repository.getUserProfile(authUser.id);
-        state = state.copyWith(user: user, isLoading: false);
+        if (user == null) {
+          // Local session exists but user is deleted from DB
+          await signOut();
+          return;
+        }
+        state = state.copyWith(
+          user: user,
+          isLoading: false,
+          isInitialized: true,
+        );
       } catch (e) {
-        // If profile fetch fails, we might still be logged in, but with no profile data
-        // For now, let's treat it as an error
-        state = state.copyWith(error: e.toString(), isLoading: false);
+        state = state.copyWith(
+          error: e.toString(),
+          isLoading: false,
+          isInitialized: true,
+        );
       }
     } else {
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, isInitialized: true);
     }
   }
 
@@ -78,9 +89,54 @@ class AuthController extends Notifier<AuthState> {
         password: password,
         username: username,
       );
-      state = state.copyWith(user: user, isLoading: false);
+
+      if (user == null) {
+        // User created but verification required
+        state = state.copyWith(
+          isLoading: false,
+          isVerificationRequired: true,
+          verificationEmail: email,
+        );
+      } else {
+        state = state.copyWith(user: user, isLoading: false);
+      }
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+  }
+
+  Future<void> verifyOtp({
+    required String token,
+    required String username,
+  }) async {
+    final email = state.verificationEmail;
+    if (email == null) return;
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final user = await _repository.verifyOtp(
+        email: email,
+        token: token,
+        username: username,
+      );
+      state = state.copyWith(
+        user: user,
+        isLoading: false,
+        isVerificationRequired: false,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
+  }
+
+  Future<void> resendOtp() async {
+    final email = state.verificationEmail;
+    if (email == null) return;
+
+    try {
+      await _repository.resendOtp(email);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
     }
   }
 
@@ -88,9 +144,13 @@ class AuthController extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true);
     try {
       await _repository.signOut();
-      state = const AuthState(isLoading: false);
+      state = const AuthState(isLoading: false, isInitialized: true);
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+        isInitialized: true,
+      );
     }
   }
 

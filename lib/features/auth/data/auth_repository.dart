@@ -50,19 +50,61 @@ class AuthRepository {
         data: {'username': username},
       );
 
-      if (response.user != null) {
+      // If email confirmation is enabled, session will be null
+      if (response.user != null && response.session != null) {
         await _supabase.from('profiles').upsert({
           'id': response.user!.id,
           'username': username,
           'email': email,
         });
-
         return await getUserProfile(response.user!.id);
       }
 
+      // If session is null, it means verification is required
       return null;
     } on AuthException catch (e) {
       throw Exception('Sign up failed: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  // Verify OTP
+  Future<UserModel?> verifyOtp({
+    required String email,
+    required String token,
+    required String username,
+  }) async {
+    try {
+      final response = await _supabase.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: OtpType.signup,
+      );
+
+      if (response.user != null) {
+        // Create profile after successful verification
+        await _supabase.from('profiles').upsert({
+          'id': response.user!.id,
+          'username': username,
+          'email': email,
+        });
+        return await getUserProfile(response.user!.id);
+      }
+      return null;
+    } on AuthException catch (e) {
+      throw Exception('Verification failed: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  // Resend OTP
+  Future<void> resendOtp(String email) async {
+    try {
+      await _supabase.auth.resend(type: OtpType.signup, email: email);
+    } on AuthException catch (e) {
+      throw Exception('Resend failed: ${e.message}');
     } catch (e) {
       throw Exception('Unexpected error: $e');
     }
@@ -89,8 +131,9 @@ class AuthRepository {
           .from('profiles')
           .select()
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
+      if (response == null) return null;
       return UserModel.fromJson(response);
     } catch (e) {
       throw Exception('Failed to get profile: $e');

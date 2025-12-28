@@ -86,4 +86,27 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get onboarding3Subtitle =>
       'Nhận thông báo ngay lập tức khi bạn bè chia sẻ điều gì đó mới.';
+
+  @override
+  String get verifyEmail => 'Xác thực\nEmail';
+
+  @override
+  String verifySubtitle(Object email) {
+    return 'Chúng tôi đã gửi mã 6 số tới $email';
+  }
+
+  @override
+  String get otpHint => '000000';
+
+  @override
+  String get verify => 'Xác nhận';
+
+  @override
+  String get resendCode => 'Gửi lại mã';
+
+  @override
+  String get invalidOtp => 'Mã OTP không đúng. Vui lòng thử lại.';
+
+  @override
+  String get otpSent => 'Đã gửi lại mã OTP thành công!';
 }

@@ -24,5 +24,12 @@
   "onboarding2Title": "Share Your\nMoments",
   "onboarding2Subtitle": "Capture and share your daily life with your inner circle.",
   "onboarding3Title": "Real-time\nUpdates",
-  "onboarding3Subtitle": "Get notified instantly when your friends share something new."
+  "onboarding3Subtitle": "Get notified instantly when your friends share something new.",
+  "verifyEmail": "Verify\nEmail",
+  "verifySubtitle": "We've sent a 6-digit code to {email}",
+  "otpHint": "000000",
+  "verify": "Verify",
+  "resendCode": "Resend Code",
+  "invalidOtp": "Invalid OTP. Please try again.",
+  "otpSent": "OTP sent successfully!"
 }

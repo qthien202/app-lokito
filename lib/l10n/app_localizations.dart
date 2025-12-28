@@ -247,6 +247,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get notified instantly when your friends share something new.'**
   String get onboarding3Subtitle;
+
+  /// No description provided for @verifyEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify\nEmail'**
+  String get verifyEmail;
+
+  /// No description provided for @verifySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ve sent a 6-digit code to {email}'**
+  String verifySubtitle(Object email);
+
+  /// No description provided for @otpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'000000'**
+  String get otpHint;
+
+  /// No description provided for @verify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get verify;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code'**
+  String get resendCode;
+
+  /// No description provided for @invalidOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid OTP. Please try again.'**
+  String get invalidOtp;
+
+  /// No description provided for @otpSent.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP sent successfully!'**
+  String get otpSent;
 }
 
 class _AppLocalizationsDelegate
