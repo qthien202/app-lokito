@@ -108,4 +108,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get otpSent => 'OTP sent successfully!';
+
+  @override
+  String get errorInvalidCredentials => 'Invalid email or password.';
+
+  @override
+  String get errorEmailTaken => 'This email is already registered.';
+
+  @override
+  String get errorUsernameTaken => 'This username is already taken.';
+
+  @override
+  String get errorNetwork => 'Network error. Please check your connection.';
+
+  @override
+  String get errorUnknown => 'An unknown error occurred.';
+
+  @override
+  String get errorTooManyRequests =>
+      'Too many requests. Please try again later.';
+
+  @override
+  String get errorEmailNotConfirmed =>
+      'Please confirm your email before signing in.';
+
+  @override
+  String get errorExpiredOtp => 'Search code has expired.';
+
+  @override
+  String errorDefaultAuth(Object message) {
+    return 'Authentication error: $message';
+  }
 }

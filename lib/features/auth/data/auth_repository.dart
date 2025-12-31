@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/provider/supabase_provider.dart';
+import '../../../core/core.dart';
 import '../domain/user_model.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -30,9 +30,9 @@ class AuthRepository {
       }
       return null;
     } on AuthException catch (e) {
-      throw Exception('Login failed: ${e.message}');
+      throw AppAuthException(_mapAuthError(e));
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      throw AppException('errorUnknown');
     }
   }
 
@@ -43,6 +43,22 @@ class AuthRepository {
     required String username,
   }) async {
     try {
+      // 0. Check if username or email is taken
+      final existingUser = await _supabase
+          .from('profiles')
+          .select('username, email')
+          .or('username.eq.$username,email.eq.$email')
+          .maybeSingle();
+
+      if (existingUser != null) {
+        if (existingUser['username'] == username) {
+          throw AppAuthException('errorUsernameTaken');
+        }
+        if (existingUser['email'] == email) {
+          throw AppAuthException('errorEmailTaken');
+        }
+      }
+
       // 1. Create auth user
       final response = await _supabase.auth.signUp(
         email: email,
@@ -63,9 +79,10 @@ class AuthRepository {
       // If session is null, it means verification is required
       return null;
     } on AuthException catch (e) {
-      throw Exception('Sign up failed: ${e.message}');
+      throw AppAuthException(_mapAuthError(e));
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      if (e is AppException) rethrow;
+      throw AppException('errorUnknown');
     }
   }
 
@@ -93,9 +110,9 @@ class AuthRepository {
       }
       return null;
     } on AuthException catch (e) {
-      throw Exception('Verification failed: ${e.message}');
+      throw AppAuthException(_mapAuthError(e));
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      throw AppException('errorUnknown');
     }
   }
 
@@ -104,9 +121,9 @@ class AuthRepository {
     try {
       await _supabase.auth.resend(type: OtpType.signup, email: email);
     } on AuthException catch (e) {
-      throw Exception('Resend failed: ${e.message}');
+      throw AppAuthException(_mapAuthError(e));
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      throw AppException('errorUnknown');
     }
   }
 
@@ -115,7 +132,7 @@ class AuthRepository {
     try {
       await _supabase.auth.signOut();
     } catch (e) {
-      throw Exception('Sign out failed: $e');
+      throw AppException('errorUnknown');
     }
   }
 
@@ -136,8 +153,35 @@ class AuthRepository {
       if (response == null) return null;
       return UserModel.fromJson(response);
     } catch (e) {
-      throw Exception('Failed to get profile: $e');
+      throw AppException('errorUnknown');
     }
+  }
+
+  String _mapAuthError(AuthException e) {
+    final message = e.message.toLowerCase();
+    if (message.contains('invalid login credentials')) {
+      return 'errorInvalidCredentials';
+    }
+    if (message.contains('user already registered')) {
+      return 'errorEmailTaken';
+    }
+    if (message.contains('email not confirmed')) {
+      return 'errorEmailNotConfirmed';
+    }
+    if (message.contains('token has expired') || message.contains('otp expired')) {
+      return 'errorExpiredOtp';
+    }
+    if (message.contains('invalid token') || message.contains('incorrect otp')) {
+      return 'invalidOtp';
+    }
+    if (message.contains('too many requests')) {
+      return 'errorTooManyRequests';
+    }
+    if (message.contains('network error') || message.contains('connection')) {
+      return 'errorNetwork';
+    }
+    
+    return message;
   }
 
   // Update profile

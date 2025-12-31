@@ -289,6 +289,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OTP sent successfully!'**
   String get otpSent;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password.'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @errorEmailTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered.'**
+  String get errorEmailTaken;
+
+  /// No description provided for @errorUsernameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This username is already taken.'**
+  String get errorUsernameTaken;
+
+  /// No description provided for @errorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your connection.'**
+  String get errorNetwork;
+
+  /// No description provided for @errorUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'An unknown error occurred.'**
+  String get errorUnknown;
+
+  /// No description provided for @errorTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Please try again later.'**
+  String get errorTooManyRequests;
+
+  /// No description provided for @errorEmailNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your email before signing in.'**
+  String get errorEmailNotConfirmed;
+
+  /// No description provided for @errorExpiredOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Search code has expired.'**
+  String get errorExpiredOtp;
+
+  /// No description provided for @errorDefaultAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication error: {message}'**
+  String errorDefaultAuth(Object message);
 }
 
 class _AppLocalizationsDelegate

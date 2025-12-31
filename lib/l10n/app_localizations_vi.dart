@@ -109,4 +109,35 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get otpSent => 'Đã gửi lại mã OTP thành công!';
+
+  @override
+  String get errorInvalidCredentials => 'Email hoặc mật khẩu không chính xác.';
+
+  @override
+  String get errorEmailTaken => 'Email này đã được đăng ký trước đó.';
+
+  @override
+  String get errorUsernameTaken => 'Tên người dùng này đã được sử dụng.';
+
+  @override
+  String get errorNetwork => 'Lỗi kết nối mạng. Vui lòng kiểm tra lại.';
+
+  @override
+  String get errorUnknown => 'Đã xảy ra lỗi không xác định.';
+
+  @override
+  String get errorTooManyRequests =>
+      'Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.';
+
+  @override
+  String get errorEmailNotConfirmed =>
+      'Vui lòng xác thực email trước khi đăng nhập.';
+
+  @override
+  String get errorExpiredOtp => 'Mã xác thực đã hết hạn.';
+
+  @override
+  String errorDefaultAuth(Object message) {
+    return 'Đã xảy ra lỗi: $message';
+  }
 }

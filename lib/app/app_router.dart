@@ -10,16 +10,21 @@ import 'package:lokito/features/auth/presentation/controllers/auth_controller.da
 import 'package:lokito/features/feed/presentation/screens/feed_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authControllerProvider);
+  final refreshListenable = ref.watch(routerRefreshListenableProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.feed,
     debugLogDiagnostics: true,
+    refreshListenable: refreshListenable,
     redirect: (context, state) {
+      // Use read here to avoid rebuilding the router in a watch
+      final authState = ref.read(authControllerProvider);
+
       // Nếu chưa khởi tạo xong (đang check login cũ), KHÔNG chuyển đi đâu cả
       if (!authState.isInitialized) return null;
 
       final isLoggedIn = authState.user != null;
+      final isVerificationRequired = authState.isVerificationRequired;
 
       // Các màn hình thuộc luồng đăng ký/đăng nhập
       final isAuthRoute =
@@ -33,8 +38,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.feed;
       }
 
-      // 2. CHƯA LOGIN mà lại ở các trang ngoài Auth -> Ra Onboarding
-      if (!isLoggedIn && !isAuthRoute) {
+      // 2. Đang trong luồng verification -> Cho phép ở OTP
+      if (isVerificationRequired && state.matchedLocation != AppRoutes.otp) {
+        // Nếu đang cần verify nhưng không ở trang OTP -> không redirect
+        // (để RegisterScreen tự push sang OTP)
+        return null;
+      }
+
+      // 3. CHƯA LOGIN và KHÔNG trong luồng verification -> Ra Onboarding
+      if (!isLoggedIn && !isAuthRoute && !isVerificationRequired) {
         return AppRoutes.onboarding;
       }
 
@@ -75,4 +87,16 @@ final routerProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) =>
         const Scaffold(body: Center(child: CircularProgressIndicator())),
   );
+});
+
+class RouterRefreshListenable extends ChangeNotifier {
+  RouterRefreshListenable(Ref ref) {
+    ref.listen(authControllerProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+}
+
+final routerRefreshListenableProvider = Provider<Listenable>((ref) {
+  return RouterRefreshListenable(ref);
 });

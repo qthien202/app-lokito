@@ -31,5 +31,14 @@
   "verify": "Xác nhận",
   "resendCode": "Gửi lại mã",
   "invalidOtp": "Mã OTP không đúng. Vui lòng thử lại.",
-  "otpSent": "Đã gửi lại mã OTP thành công!"
+  "otpSent": "Đã gửi lại mã OTP thành công!",
+  "errorInvalidCredentials": "Email hoặc mật khẩu không chính xác.",
+  "errorEmailTaken": "Email này đã được đăng ký trước đó.",
+  "errorUsernameTaken": "Tên người dùng này đã được sử dụng.",
+  "errorNetwork": "Lỗi kết nối mạng. Vui lòng kiểm tra lại.",
+  "errorUnknown": "Đã xảy ra lỗi không xác định.",
+  "errorTooManyRequests": "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.",
+  "errorEmailNotConfirmed": "Vui lòng xác thực email trước khi đăng nhập.",
+  "errorExpiredOtp": "Mã xác thực đã hết hạn.",
+  "errorDefaultAuth": "Đã xảy ra lỗi: {message}"
 }

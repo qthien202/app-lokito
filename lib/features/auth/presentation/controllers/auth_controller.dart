@@ -40,6 +40,20 @@ class AuthController extends Notifier<AuthState> {
       try {
         final user = await _repository.getUserProfile(authUser.id);
         if (user == null) {
+          // Check if user is awaiting email confirmation
+          final isEmailConfirmed = authUser.emailConfirmedAt != null;
+          
+          if (!isEmailConfirmed) {
+            // User is awaiting verification, don't sign out
+            state = state.copyWith(
+              isLoading: false,
+              isInitialized: true,
+              isVerificationRequired: true,
+              verificationEmail: authUser.email,
+            );
+            return;
+          }
+          
           // Local session exists but user is deleted from DB
           await signOut();
           return;
@@ -73,7 +87,10 @@ class AuthController extends Notifier<AuthState> {
       );
       state = state.copyWith(user: user, isLoading: false);
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+      );
     }
   }
 
@@ -82,7 +99,11 @@ class AuthController extends Notifier<AuthState> {
     required String password,
     required String username,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      isVerificationRequired: false,
+    );
     try {
       final user = await _repository.signUpWithEmail(
         email: email,
@@ -101,7 +122,10 @@ class AuthController extends Notifier<AuthState> {
         state = state.copyWith(user: user, isLoading: false);
       }
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+      );
     }
   }
 
@@ -125,7 +149,10 @@ class AuthController extends Notifier<AuthState> {
         isVerificationRequired: false,
       );
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+      );
     }
   }
 

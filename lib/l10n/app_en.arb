@@ -31,5 +31,14 @@
   "verify": "Verify",
   "resendCode": "Resend Code",
   "invalidOtp": "Invalid OTP. Please try again.",
-  "otpSent": "OTP sent successfully!"
+  "otpSent": "OTP sent successfully!",
+  "errorInvalidCredentials": "Invalid email or password.",
+  "errorEmailTaken": "This email is already registered.",
+  "errorUsernameTaken": "This username is already taken.",
+  "errorNetwork": "Network error. Please check your connection.",
+  "errorUnknown": "An unknown error occurred.",
+  "errorTooManyRequests": "Too many requests. Please try again later.",
+  "errorEmailNotConfirmed": "Please confirm your email before signing in.",
+  "errorExpiredOtp": "Search code has expired.",
+  "errorDefaultAuth": "Authentication error: {message}"
 }

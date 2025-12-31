@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lokito/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +22,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  @override
+  void initState() {
+    if(kDebugMode){
+      _usernameController.text="thien";
+      _emailController.text="dungshopee202@gmail.com";
+      _passwordController.text="123456";
+    }
+    super.initState();
+  }
   @override
   void dispose() {
     _usernameController.dispose();
@@ -48,7 +57,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     ref.listen(authControllerProvider, (previous, next) {
       if (next.error != null && !next.isLoading) {
-        SnackbarUtils.showError(context, next.error!);
+        SnackbarUtils.showError(context, context.mapErrorMessage(next.error!));
         ref.read(authControllerProvider.notifier).clearError();
       }
 
@@ -65,7 +74,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.pushReplacement(AppRoutes.login),
+          onPressed: () => context.pop(),
         ),
       ),
       body: AppBackground(

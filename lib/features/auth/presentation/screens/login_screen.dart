@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:lokito/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +21,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  @override
+  void initState() {
+    if(kDebugMode){
+      _emailController.text="nth4356@gmail.com";
+      _passwordController.text="123456";
+    }
+    super.initState();
+  }
   @override
   void dispose() {
     _emailController.dispose();
@@ -45,7 +53,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen(authControllerProvider, (previous, next) {
       if (next.error != null && !next.isLoading) {
-        SnackbarUtils.showError(context, next.error!);
+        SnackbarUtils.showError(context, context.mapErrorMessage(next.error!));
         ref.read(authControllerProvider.notifier).clearError();
       }
     });
@@ -144,7 +152,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     text: l10n.newUser,
                     actionText: l10n.joinLokito,
                     onActionPressed: () =>
-                        context.pushReplacement(AppRoutes.register),
+                        context.push(AppRoutes.register),
                   ),
                 ],
               ),

@@ -43,7 +43,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
     ref.listen(authControllerProvider, (previous, next) {
       if (next.error != null && !next.isLoading) {
-        SnackbarUtils.showError(context, next.error!);
+        SnackbarUtils.showError(context, context.mapErrorMessage(next.error!));
         ref.read(authControllerProvider.notifier).clearError();
       }
     });
