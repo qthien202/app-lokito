@@ -55,6 +55,12 @@ dependencies:
   slang: ^4.11.1
   slang_flutter: ^4.11.0
   freezed_annotation: ^3.1.0
+  liquid_glass_renderer: ^0.2.0-dev.4
+  motor: ^1.1.0
+  iconsax_flutter: ^1.0.1
+  rive_animated_icon: ^2.0.5
+  rive: ^0.13.20
+
 
 dev_dependencies:
   flutter_test:

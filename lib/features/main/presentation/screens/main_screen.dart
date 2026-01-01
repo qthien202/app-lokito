@@ -1,6 +1,12 @@
+import 'dart:math' as math;
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
+import 'package:lokito/features/main/presentation/widgets/bottom_bar.dart';
 import 'package:lokito/i18n/strings.g.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key, required this.navigationShell});
@@ -20,33 +26,43 @@ class MainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = brightness == Brightness.dark;
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
+
+      bottomNavigationBar: LiquidGlassBottomBar(
+        fake: false,
         selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: _goBranch,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home),
-            label: t.common.nav.home,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.search_outlined),
-            selectedIcon: const Icon(Icons.search),
+        onTabSelected: _goBranch,
+        tabs: [
+          LiquidGlassBottomBarTab(label: t.common.nav.home, icon: Iconsax.home),
+          LiquidGlassBottomBarTab(
             label: t.common.nav.search,
+            icon: Iconsax.search_normal,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.chat_bubble_outline),
-            selectedIcon: const Icon(Icons.chat_bubble),
+          LiquidGlassBottomBarTab(
             label: t.common.nav.chat,
+            icon: Iconsax.message,
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.person_outline),
-            selectedIcon: const Icon(Icons.person),
+          LiquidGlassBottomBarTab(
             label: t.common.nav.profile,
+            icon: Iconsax.user,
           ),
         ],
+        glassSettings: LiquidGlassSettings(
+          refractiveIndex: 1.25,
+          thickness: 35,
+          blur: 30,
+          saturation: 1.7,
+          lightIntensity: isDark ? 0.8 : 1.2,
+          ambientStrength: isDark ? 0.3 : 0.6,
+          lightAngle: math.pi / 4,
+          chromaticAberration: 0.4,
+          glassColor: CupertinoTheme.of(
+            context,
+          ).barBackgroundColor.withValues(alpha: 0.7), // Tăng opacity
+        ),
       ),
     );
   }
