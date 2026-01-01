@@ -8,4 +8,7 @@ class AppRoutes {
   static const forgotPasswordOtp = '/forgot-password-otp';
   static const resetPassword = '/reset-password';
   static const feed = '/';
+  static const search = '/search';
+  static const chat = '/chat';
+  static const profile = '/profile';
 }
