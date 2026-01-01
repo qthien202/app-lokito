@@ -4,9 +4,10 @@ class AppColors {
   AppColors._();
 
   // Seed & Primary
-  static const seedColor = Color(0xFF6C63FF);
-  static const primaryLight = Color(0xFF6C63FF);
-  static const primaryDark = Color(0xFF8B85FF);
+  // Seed & Primary
+  static const seedColor = Color(0xFF2F80ED);
+  static const primaryLight = Color(0xFF2F80ED);
+  static const primaryDark = Color(0xFF5C9DFF);
 
   // Backgrounds
   static const backgroundLight = Color(0xFFF8F9FE);

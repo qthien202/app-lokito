@@ -11,5 +11,11 @@
         "network": "Lỗi kết nối mạng. Vui lòng kiểm tra lại.",
         "unknown": "Đã xảy ra lỗi không xác định.",
         "tooManyRequests": "Quá nhiều yêu cầu. Vui lòng thử lại sau ít phút."
+    },
+    "nav": {
+        "home": "Trang chủ",
+        "search": "Tìm kiếm",
+        "chat": "Tin nhắn",
+        "profile": "Cá nhân"
     }
 }
