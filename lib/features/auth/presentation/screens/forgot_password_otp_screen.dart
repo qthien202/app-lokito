@@ -8,15 +8,17 @@ import 'package:lokito/features/auth/presentation/widgets/resend_timer_button.da
 import 'package:lokito/i18n/strings.g.dart';
 import 'package:pinput/pinput.dart';
 
-class OtpScreen extends ConsumerStatefulWidget {
-  final String username;
-  const OtpScreen({super.key, required this.username});
+class ForgotPasswordOtpScreen extends ConsumerStatefulWidget {
+  static const path = '/forgot-password-otp';
+  const ForgotPasswordOtpScreen({super.key});
 
   @override
-  ConsumerState<OtpScreen> createState() => _OtpScreenState();
+  ConsumerState<ForgotPasswordOtpScreen> createState() =>
+      _ForgotPasswordOtpScreenState();
 }
 
-class _OtpScreenState extends ConsumerState<OtpScreen> {
+class _ForgotPasswordOtpScreenState
+    extends ConsumerState<ForgotPasswordOtpScreen> {
   final _pinController = TextEditingController();
   final _focusNode = FocusNode();
 
@@ -27,11 +29,19 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     super.dispose();
   }
 
-  void _submit(String pin) {
+  Future<void> _submit(String pin) async {
     if (pin.length == 6) {
-      ref
-          .read(authControllerProvider.notifier)
-          .verifyOtp(token: pin, username: widget.username);
+      try {
+        await ref
+            .read(authControllerProvider.notifier)
+            .verifyPasswordResetOtp(token: pin);
+
+        if (mounted) {
+          context.push(AppRoutes.resetPassword);
+        }
+      } catch (e) {
+        // Error is handled by listener
+      }
     }
   }
 
@@ -96,8 +106,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AuthHeader(
-                    title: t.auth.verifyEmail,
-                    subtitle: t.auth.verifySubtitle(
+                    title: t.auth.verifyResetCode,
+                    subtitle: t.auth.verifyResetCodeSubtitle(
                       email: authState.verificationEmail ?? '',
                     ),
                   ),
@@ -146,9 +156,23 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                         ),
                       ),
                       ResendTimerButton(
-                        onResend: () {
-                          ref.read(authControllerProvider.notifier).resendOtp();
-                          SnackbarUtils.showSuccess(context, t.auth.otpSent);
+                        onResend: () async {
+                          final email = authState.verificationEmail;
+                          if (email != null) {
+                            try {
+                              await ref
+                                  .read(authControllerProvider.notifier)
+                                  .sendPasswordResetCode(email);
+                              if (context.mounted) {
+                                SnackbarUtils.showSuccess(
+                                  context,
+                                  t.auth.codeSentSuccess,
+                                );
+                              }
+                            } catch (e) {
+                              // Error handled by listener
+                            }
+                          }
                         },
                       ),
                     ],

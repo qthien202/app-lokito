@@ -127,6 +127,46 @@ class AuthRepository {
     }
   }
 
+  // Send password reset OTP
+  Future<void> sendPasswordResetOtp(String email) async {
+    try {
+      await _supabase.auth.resetPasswordForEmail(email);
+    } on AuthException catch (e) {
+      throw AppAuthException(_mapAuthError(e));
+    } catch (e) {
+      throw AppException('errorUnknown');
+    }
+  }
+
+  // Verify password reset OTP
+  Future<void> verifyPasswordResetOtp({
+    required String email,
+    required String token,
+  }) async {
+    try {
+      await _supabase.auth.verifyOTP(
+        email: email,
+        token: token,
+        type: OtpType.recovery,
+      );
+    } on AuthException catch (e) {
+      throw AppAuthException(_mapAuthError(e));
+    } catch (e) {
+      throw AppException('errorUnknown');
+    }
+  }
+
+  // Update password after OTP verification
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      await _supabase.auth.updateUser(UserAttributes(password: newPassword));
+    } on AuthException catch (e) {
+      throw AppAuthException(_mapAuthError(e));
+    } catch (e) {
+      throw AppException('errorUnknown');
+    }
+  }
+
   // Sign out
   Future<void> signOut() async {
     try {
@@ -168,10 +208,12 @@ class AuthRepository {
     if (message.contains('email not confirmed')) {
       return 'errorEmailNotConfirmed';
     }
-    if (message.contains('token has expired') || message.contains('otp expired')) {
+    if (message.contains('token has expired') ||
+        message.contains('otp expired')) {
       return 'errorExpiredOtp';
     }
-    if (message.contains('invalid token') || message.contains('incorrect otp')) {
+    if (message.contains('invalid token') ||
+        message.contains('incorrect otp')) {
       return 'invalidOtp';
     }
     if (message.contains('too many requests')) {
@@ -180,7 +222,7 @@ class AuthRepository {
     if (message.contains('network error') || message.contains('connection')) {
       return 'errorNetwork';
     }
-    
+
     return message;
   }
 

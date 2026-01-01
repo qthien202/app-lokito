@@ -12,5 +12,6 @@ abstract class AuthState with _$AuthState {
     @Default(false) bool isInitialized,
     @Default(false) bool isVerificationRequired,
     String? verificationEmail,
+    String? verificationUsername,
   }) = _AuthState;
 }

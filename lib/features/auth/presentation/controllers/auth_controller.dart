@@ -42,7 +42,7 @@ class AuthController extends Notifier<AuthState> {
         if (user == null) {
           // Check if user is awaiting email confirmation
           final isEmailConfirmed = authUser.emailConfirmedAt != null;
-          
+
           if (!isEmailConfirmed) {
             // User is awaiting verification, don't sign out
             state = state.copyWith(
@@ -50,10 +50,12 @@ class AuthController extends Notifier<AuthState> {
               isInitialized: true,
               isVerificationRequired: true,
               verificationEmail: authUser.email,
+              verificationUsername:
+                  authUser.userMetadata?['username'] as String?,
             );
             return;
           }
-          
+
           // Local session exists but user is deleted from DB
           await signOut();
           return;
@@ -87,10 +89,7 @@ class AuthController extends Notifier<AuthState> {
       );
       state = state.copyWith(user: user, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        isLoading: false,
-      );
+      state = state.copyWith(error: e.toString(), isLoading: false);
     }
   }
 
@@ -117,15 +116,13 @@ class AuthController extends Notifier<AuthState> {
           isLoading: false,
           isVerificationRequired: true,
           verificationEmail: email,
+          verificationUsername: username,
         );
       } else {
         state = state.copyWith(user: user, isLoading: false);
       }
     } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        isLoading: false,
-      );
+      state = state.copyWith(error: e.toString(), isLoading: false);
     }
   }
 
@@ -149,10 +146,7 @@ class AuthController extends Notifier<AuthState> {
         isVerificationRequired: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        error: e.toString(),
-        isLoading: false,
-      );
+      state = state.copyWith(error: e.toString(), isLoading: false);
     }
   }
 
@@ -183,6 +177,48 @@ class AuthController extends Notifier<AuthState> {
 
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  // Password reset flow methods
+  Future<void> sendPasswordResetCode(String email) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repository.sendPasswordResetOtp(email);
+      state = state.copyWith(isLoading: false, verificationEmail: email);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+      rethrow;
+    }
+  }
+
+  Future<void> verifyPasswordResetOtp({required String token}) async {
+    final email = state.verificationEmail;
+    if (email == null) return;
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repository.verifyPasswordResetOtp(email: email, token: token);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(String newPassword) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repository.updatePassword(newPassword);
+      // After password update, we should have a session. Let's refresh profile.
+      await _checkCurrentUser();
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+      rethrow;
+    }
+  }
+
+  void setResetEmail(String? email) {
+    state = state.copyWith(verificationEmail: email);
   }
 }
 

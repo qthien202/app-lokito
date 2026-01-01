@@ -1,0 +1,15 @@
+{
+    "appName": "Lokito",
+    "email": "Email",
+    "emailHint": "your@email.com",
+    "password": "Password",
+    "passwordHint": "••••••••",
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started",
+    "errors": {
+        "network": "Network error. Please check your connection.",
+        "unknown": "An unknown error occurred.",
+        "tooManyRequests": "Too many requests. Please try again later."
+    }
+}

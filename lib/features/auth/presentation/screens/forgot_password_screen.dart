@@ -1,53 +1,44 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lokito/core/core.dart';
 import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:lokito/features/auth/presentation/widgets/auth_footer.dart';
 import 'package:lokito/features/auth/presentation/widgets/auth_header.dart';
 import 'package:lokito/i18n/strings.g.dart';
 
-class RegisterScreen extends ConsumerStatefulWidget {
-  static const path = '/register';
-  const RegisterScreen({super.key});
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
+  static const path = '/forgot-password';
+  const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  @override
-  void initState() {
-    if (kDebugMode) {
-      _usernameController.text = "thien";
-      _emailController.text = "dungshopee202@gmail.com";
-      _passwordController.text = "123456";
-    }
-    super.initState();
-  }
 
   @override
   void dispose() {
-    _usernameController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
-      await ref
-          .read(authControllerProvider.notifier)
-          .signUpWithEmail(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-            username: _usernameController.text.trim(),
-          );
+      try {
+        await ref
+            .read(authControllerProvider.notifier)
+            .sendPasswordResetCode(_emailController.text.trim());
+
+        if (mounted) {
+          SnackbarUtils.showSuccess(context, t.auth.codeSentSuccess);
+          context.push(AppRoutes.forgotPasswordOtp);
+        }
+      } catch (e) {
+        // Error is handled by listener
+      }
     }
   }
 
@@ -59,10 +50,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (next.error != null && !next.isLoading) {
         SnackbarUtils.showError(context, context.mapErrorMessage(next.error!));
         ref.read(authControllerProvider.notifier).clearError();
-      }
-
-      if (next.isVerificationRequired && !next.isLoading) {
-        context.push(AppRoutes.otp, extra: _usernameController.text.trim());
       }
     });
 
@@ -85,8 +72,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AuthHeader(
-                    title: t.auth.createAccount,
-                    subtitle: t.auth.signUpSubtitle,
+                    title: t.auth.forgotPasswordTitle,
+                    subtitle: t.auth.forgotPasswordSubtitle,
                   ),
                   const SizedBox(height: 48),
                   GlassCard(
@@ -99,22 +86,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          CustomTextField(
-                            label: t.auth.username,
-                            hint: t.auth.usernameHint,
-                            controller: _usernameController,
-                            prefixIcon: Icons.person_outline_rounded,
-                            validator: (val) {
-                              if (val == null || val.isEmpty) {
-                                return t.auth.validation.usernameRequired;
-                              }
-                              if (val.length < 3) {
-                                return t.auth.validation.usernameTooShort;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
                           CustomTextField(
                             label: t.common.email,
                             hint: t.common.emailHint,
@@ -131,26 +102,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 20),
-                          CustomTextField(
-                            label: t.common.password,
-                            hint: t.common.passwordHint,
-                            controller: _passwordController,
-                            isPassword: true,
-                            prefixIcon: Icons.lock_outline_rounded,
-                            validator: (val) {
-                              if (val == null || val.isEmpty) {
-                                return t.auth.validation.passwordRequired;
-                              }
-                              if (val.length < 6) {
-                                return t.auth.validation.passwordTooShort;
-                              }
-                              return null;
-                            },
-                          ),
                           const SizedBox(height: 32),
                           PrimaryButton(
-                            text: t.auth.createAccount.replaceAll('\n', ' '),
+                            text: t.auth.sendCode,
                             isLoading: authState.isLoading,
                             onPressed: _submit,
                           ),
@@ -158,12 +112,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  AuthFooter(
-                    text: t.auth.alreadyMember,
-                    actionText: t.auth.signIn,
-                    onActionPressed: () =>
-                        context.pushReplacement(AppRoutes.login),
+                  const SizedBox(height: 24),
+                  TextButton(
+                    onPressed: () => context.pop(),
+                    child: Text(
+                      t.auth.backToLogin,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                 ],
               ),
