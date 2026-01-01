@@ -1,0 +1,33 @@
+{
+    "title": "Bảng tin",
+    "reply": "Trả lời",
+    "delete": "Xóa",
+    "like": "Thích",
+    "errorOccurred": "Có lỗi xảy ra",
+    "tryAgain": "Thử lại",
+    "loadingMore": "Đang tải thêm bài viết...",
+    "noMorePosts": "Không còn bài viết nào để tải",
+    "pullToRefresh": "Kéo để làm mới",
+    "emptyState": {
+        "title": "Chưa có bài viết nào",
+        "subtitle": "Hãy là người đầu tiên chia sẻ điều thú vị với cộng đồng!",
+        "refresh": "Làm mới"
+    },
+    "errors": {
+        "failedToUpdateLike": "Không thể cập nhật lượt thích",
+        "failedToDeletePost": "Không thể xóa bài viết",
+        "failedToCreatePost": "Không thể tạo bài viết",
+        "failedToLoadPosts": "Không thể tải bài viết",
+        "networkError": "Lỗi mạng khi tải bài viết",
+        "defaultFeed": "Lỗi bảng tin: $message"
+    },
+    "timeAgo": {
+        "justNow": "Vừa xong",
+        "minutesAgo": "$count phút trước",
+        "hoursAgo": "$count giờ trước",
+        "daysAgo": "$count ngày trước",
+        "weeksAgo": "$count tuần trước",
+        "monthsAgo": "$count tháng trước",
+        "yearsAgo": "$count năm trước"
+    }
+}

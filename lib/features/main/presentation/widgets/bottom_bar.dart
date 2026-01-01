@@ -155,15 +155,13 @@ class _LiquidGlassBottomBarState extends State<LiquidGlassBottomBar> {
                                   sigmaY: 50,
                                 ),
                                 child: Container(
-                                  color:
-                                      (isDark
-                                              ? const Color(0xFF000000)
-                                              : CupertinoTheme.of(
-                                                  context,
-                                                ).barBackgroundColor)
-                                          .withValues(
-                                            alpha: isDark ? 0.4 : 0.25,
-                                          ),
+                                  color: isDark
+                                      ? const Color(0xFF0F0F16).withValues(
+                                          alpha: 0.50,
+                                        ) // dùng màu nền của bạn
+                                      : CupertinoTheme.of(context)
+                                            .barBackgroundColor
+                                            .withValues(alpha: 0.25),
                                 ),
                               ),
                             ),
