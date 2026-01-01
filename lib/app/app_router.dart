@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lokito/core/core.dart';
 import 'package:lokito/app/routes/auth_routes.dart';
+import 'package:lokito/app/routes/main_shell_route.dart';
 import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:lokito/features/feed/presentation/screens/feed_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshListenable = ref.watch(routerRefreshListenableProvider);
@@ -46,14 +46,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       return null;
     },
-    routes: [
-      GoRoute(
-        path: AppRoutes.feed,
-        name: 'feed',
-        builder: (context, state) => const FeedScreen(),
-      ),
-      ...authRoutes(ref),
-    ],
+    routes: [mainShellRoute(), ...authRoutes(ref)],
     // Màn hình hiển thị khi lỗi hoặc đang chờ khởi tạo
     errorBuilder: (context, state) =>
         const Scaffold(body: Center(child: CircularProgressIndicator())),

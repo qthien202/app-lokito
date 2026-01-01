@@ -11,5 +11,11 @@
         "network": "Network error. Please check your connection.",
         "unknown": "An unknown error occurred.",
         "tooManyRequests": "Too many requests. Please try again later."
+    },
+    "nav": {
+        "home": "Home",
+        "search": "Search",
+        "chat": "Chat",
+        "profile": "Profile"
     }
 }
