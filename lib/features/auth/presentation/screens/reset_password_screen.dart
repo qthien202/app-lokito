@@ -1,49 +1,49 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lokito/core/core.dart';
 import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:lokito/features/auth/presentation/widgets/auth_footer.dart';
 import 'package:lokito/features/auth/presentation/widgets/auth_header.dart';
 import 'package:lokito/i18n/strings.g.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  static const path = '/login';
-  const LoginScreen({super.key});
+class ResetPasswordScreen extends ConsumerStatefulWidget {
+  static const path = '/reset-password';
+  const ResetPasswordScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<ResetPasswordScreen> createState() =>
+      _ResetPasswordScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  @override
-  void initState() {
-    if (kDebugMode) {
-      _emailController.text = "nth4356@gmail.com";
-      _passwordController.text = "123456";
-    }
-    super.initState();
-  }
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
-      await ref
-          .read(authControllerProvider.notifier)
-          .signInWithEmail(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-          );
+      try {
+        await ref
+            .read(authControllerProvider.notifier)
+            .resetPassword(_newPasswordController.text);
+
+        if (mounted) {
+          SnackbarUtils.showSuccess(context, t.auth.passwordResetSuccess);
+          // Clear the reset email from state
+          ref.read(authControllerProvider.notifier).setResetEmail(null);
+          // Navigate to login
+          context.go(AppRoutes.login);
+        }
+      } catch (e) {
+        // Error is handled by listener
+      }
     }
   }
 
@@ -64,7 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.canPop() ? context.pop() : null,
+          onPressed: () => context.pop(),
         ),
       ),
       body: AppBackground(
@@ -77,8 +77,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   AuthHeader(
-                    title: t.auth.welcomeBack,
-                    subtitle: t.auth.signInSubtitle,
+                    title: t.auth.resetPasswordTitle,
+                    subtitle: t.auth.resetPasswordSubtitle,
                   ),
                   const SizedBox(height: 48),
                   GlassCard(
@@ -92,26 +92,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           CustomTextField(
-                            label: t.common.email,
-                            hint: t.common.emailHint,
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            prefixIcon: Icons.alternate_email_rounded,
-                            validator: (val) {
-                              if (val == null || val.isEmpty) {
-                                return t.auth.validation.emailRequired;
-                              }
-                              if (!val.contains('@')) {
-                                return t.auth.validation.emailInvalid;
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          CustomTextField(
-                            label: t.common.password,
-                            hint: t.common.passwordHint,
-                            controller: _passwordController,
+                            label: t.auth.newPassword,
+                            hint: t.auth.newPasswordHint,
+                            controller: _newPasswordController,
                             isPassword: true,
                             prefixIcon: Icons.lock_outline_rounded,
                             validator: (val) {
@@ -124,37 +107,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 12),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () =>
-                                  context.push(AppRoutes.forgotPassword),
-                              child: Text(
-                                t.auth.forgotPassword,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
+                          const SizedBox(height: 20),
+                          CustomTextField(
+                            label: t.auth.confirmPassword,
+                            hint: t.auth.confirmPasswordHint,
+                            controller: _confirmPasswordController,
+                            isPassword: true,
+                            prefixIcon: Icons.lock_outline_rounded,
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return t
+                                    .auth
+                                    .validation
+                                    .confirmPasswordRequired;
+                              }
+                              if (val != _newPasswordController.text) {
+                                return t.auth.passwordMismatch;
+                              }
+                              return null;
+                            },
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 32),
                           PrimaryButton(
-                            text: t.auth.signIn,
+                            text: t.auth.resetPassword,
                             isLoading: authState.isLoading,
                             onPressed: _submit,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  AuthFooter(
-                    text: t.auth.newUser,
-                    actionText: t.auth.joinLokito,
-                    onActionPressed: () => context.push(AppRoutes.register),
                   ),
                 ],
               ),

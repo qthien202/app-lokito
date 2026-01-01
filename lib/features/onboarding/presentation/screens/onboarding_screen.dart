@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lokito/core/constants/app_routes.dart';
 import 'package:lokito/core/core.dart';
 import 'package:lokito/features/onboarding/domain/onboarding_item.dart';
 import 'package:lokito/features/onboarding/presentation/widgets/onboarding_page.dart';
-import 'package:lokito/l10n/app_localizations.dart';
+import 'package:lokito/i18n/strings.g.dart';
 
 class OnboardingScreen extends StatefulWidget {
   static const path = '/';
@@ -18,20 +17,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  List<OnboardingItem> _getItems(AppLocalizations l10n) => [
+  List<OnboardingItem> get _items => [
     OnboardingItem(
-      title: l10n.onboarding1Title,
-      subtitle: l10n.onboarding1Subtitle,
+      title: t.onboarding.page1.title,
+      subtitle: t.onboarding.page1.subtitle,
       lottieAsset: 'assets/lotties/connection.json',
     ),
     OnboardingItem(
-      title: l10n.onboarding2Title,
-      subtitle: l10n.onboarding2Subtitle,
+      title: t.onboarding.page2.title,
+      subtitle: t.onboarding.page2.subtitle,
       lottieAsset: 'assets/lotties/share.json',
     ),
     OnboardingItem(
-      title: l10n.onboarding3Title,
-      subtitle: l10n.onboarding3Subtitle,
+      title: t.onboarding.page3.title,
+      subtitle: t.onboarding.page3.subtitle,
       lottieAsset: 'assets/lotties/onboarding.json',
     ),
   ];
@@ -45,27 +44,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    final items = _getItems(l10n);
+    final items = _items;
 
     return Scaffold(
       body: AppBackground(
         child: Column(
           children: [
-            _buildTopBar(context, theme, l10n),
+            _buildTopBar(context, theme),
             _buildPageView(items),
-            _buildBottomBar(theme, context, l10n, items.length),
+            _buildBottomBar(theme, context, items.length),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTopBar(
-    BuildContext context,
-    ThemeData theme,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildTopBar(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -74,7 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           TextButton(
             onPressed: () => context.push(AppRoutes.login),
             child: Text(
-              l10n.skip,
+              t.common.skip,
               style: TextStyle(
                 color: theme.colorScheme.primary,
                 fontWeight: FontWeight.w600,
@@ -101,12 +95,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildBottomBar(
-    ThemeData theme,
-    BuildContext context,
-    AppLocalizations l10n,
-    int itemCount,
-  ) {
+  Widget _buildBottomBar(ThemeData theme, BuildContext context, int itemCount) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 0, 32, 32),
       child: Column(
@@ -115,7 +104,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           _buildIndicators(theme, itemCount),
           const SizedBox(height: 32),
           PrimaryButton(
-            text: _currentPage == itemCount - 1 ? l10n.getStarted : l10n.next,
+            text: _currentPage == itemCount - 1
+                ? t.common.getStarted
+                : t.common.next,
             onPressed: () {
               if (_currentPage < itemCount - 1) {
                 _pageController.nextPage(

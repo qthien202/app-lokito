@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lokito/l10n/app_localizations.dart';
 import 'package:lokito/app/app_router.dart';
 import 'package:lokito/core/core.dart';
+import 'package:lokito/i18n/strings.g.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -18,13 +18,9 @@ class App extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en'), Locale('vi')],
+      locale: TranslationProvider.of(context).flutterLocale, // use slang locale
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      supportedLocales: AppLocaleUtils.supportedLocales,
       routerConfig: router,
     );
   }

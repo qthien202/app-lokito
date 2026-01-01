@@ -6,6 +6,9 @@ import 'package:lokito/core/core.dart';
 import 'package:lokito/features/auth/presentation/screens/login_screen.dart';
 import 'package:lokito/features/auth/presentation/screens/register_screen.dart';
 import 'package:lokito/features/auth/presentation/screens/otp_screen.dart';
+import 'package:lokito/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:lokito/features/auth/presentation/screens/forgot_password_otp_screen.dart';
+import 'package:lokito/features/auth/presentation/screens/reset_password_screen.dart';
 import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:lokito/features/feed/presentation/screens/feed_screen.dart';
 
@@ -31,26 +34,25 @@ final routerProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.register ||
           state.matchedLocation == AppRoutes.onboarding ||
-          state.matchedLocation == AppRoutes.otp;
+          state.matchedLocation == AppRoutes.otp ||
+          state.matchedLocation == AppRoutes.forgotPassword ||
+          state.matchedLocation == AppRoutes.forgotPasswordOtp ||
+          state.matchedLocation == AppRoutes.resetPassword;
 
-      // 1. ĐÃ LOGIN mà lại ở các trang Auth -> Vào Feed
       if (isLoggedIn && isAuthRoute) {
         return AppRoutes.feed;
       }
 
-      // 2. Đang trong luồng verification -> Cho phép ở OTP
       if (isVerificationRequired && state.matchedLocation != AppRoutes.otp) {
-        // Nếu đang cần verify nhưng không ở trang OTP -> không redirect
-        // (để RegisterScreen tự push sang OTP)
-        return null;
+        // Chỉ cho phép quay lại Login nếu muốn, còn lại ép vào OTP
+        if (state.matchedLocation == AppRoutes.login) return null;
+        return AppRoutes.otp;
       }
 
-      // 3. CHƯA LOGIN và KHÔNG trong luồng verification -> Ra Onboarding
       if (!isLoggedIn && !isAuthRoute && !isVerificationRequired) {
         return AppRoutes.onboarding;
       }
 
-      // Các trường hợp khác để GoRouter tự lo
       return null;
     },
     routes: [
@@ -78,9 +80,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.otp,
         name: 'otp',
         builder: (context, state) {
-          final username = state.extra as String? ?? '';
+          final authState = ref.read(authControllerProvider);
+          final username =
+              state.extra as String? ?? authState.verificationUsername ?? '';
           return OtpScreen(username: username);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        name: 'forgotPassword',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPasswordOtp,
+        name: 'forgotPasswordOtp',
+        builder: (context, state) => const ForgotPasswordOtpScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.resetPassword,
+        name: 'resetPassword',
+        builder: (context, state) => const ResetPasswordScreen(),
       ),
     ],
     // Màn hình hiển thị khi lỗi hoặc đang chờ khởi tạo
@@ -91,7 +110,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 class RouterRefreshListenable extends ChangeNotifier {
   RouterRefreshListenable(Ref ref) {
-    ref.listen(authControllerProvider, (_, __) {
+    ref.listen(authControllerProvider, (previous, next) {
       notifyListeners();
     });
   }

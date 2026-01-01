@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lokito/l10n/app_localizations.dart';
+import 'package:lokito/i18n/strings.g.dart';
 
 class AppException implements Exception {
   final String message;
@@ -17,30 +17,28 @@ class AppAuthException extends AppException {
 
 extension AppExceptionX on BuildContext {
   String mapErrorMessage(String error) {
-    final l10n = AppLocalizations.of(this)!;
-    
     switch (error) {
       case 'errorInvalidCredentials':
-        return l10n.errorInvalidCredentials;
+        return t.auth.errors.invalidCredentials;
       case 'errorEmailTaken':
-        return l10n.errorEmailTaken;
+        return t.auth.errors.emailTaken;
       case 'errorUsernameTaken':
-        return l10n.errorUsernameTaken;
+        return t.auth.errors.usernameTaken;
       case 'errorNetwork':
-        return l10n.errorNetwork;
+        return t.common.errors.network;
       case 'errorTooManyRequests':
-        return l10n.errorTooManyRequests;
+        return t.common.errors.tooManyRequests;
       case 'errorEmailNotConfirmed':
-        return l10n.errorEmailNotConfirmed;
+        return t.auth.errors.emailNotConfirmed;
       case 'errorExpiredOtp':
-        return l10n.errorExpiredOtp;
+        return t.auth.errors.expiredOtp;
       case 'invalidOtp':
-        return l10n.invalidOtp;
+        return t.auth.invalidOtp;
       case 'errorUnknown':
-        return l10n.errorUnknown;
+        return t.common.errors.unknown;
       default:
         // Try to check if it's a raw Supabase error or something else
-        return l10n.errorDefaultAuth(error);
+        return t.auth.errors.defaultAuth(message: error);
     }
   }
 }

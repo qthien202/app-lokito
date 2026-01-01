@@ -2,6 +2,8 @@
 
 import 'package:lokito/core/environment/env.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'supabase_logger.dart';
 
 import '../constants/supabase_constants.dart';
 
@@ -21,7 +23,8 @@ class SupabaseService {
     await Supabase.initialize(
       url: Env.supabaseURL,
       anonKey: Env.supabaseKey,
-      debug: true, // Enable logging
+      debug: true, // Enable internal logging
+      httpClient: SupabaseHttpClient(http.Client()), // Custom API logging
       authOptions: const FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
       ),
