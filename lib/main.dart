@@ -10,5 +10,11 @@ void main() async {
   await SupabaseService.initialize();
   TimeagoConfig.initialize(); // Initialize timeago
   LocaleSettings.useDeviceLocale(); // Set locale to device language
-  runApp(TranslationProvider(child: const ProviderScope(child: App())));
+  runApp(
+    ProviderScope(
+      child: TranslationProvider(
+        child: const App(),
+      ),
+    ),
+  );
 }
