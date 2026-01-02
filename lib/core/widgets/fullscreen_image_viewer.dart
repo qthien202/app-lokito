@@ -162,6 +162,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                                 color: Colors.grey[900],
                                 child: const Center(
                                   child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
@@ -191,13 +192,13 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               ),
               
               // Top overlay
-              AnimatedOpacity(
-                opacity: _showOverlay ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
-                child: Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: AnimatedOpacity(
+                  opacity: _showOverlay ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -211,8 +212,9 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                     ),
                     child: SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
                               onPressed: _closeViewer,
@@ -280,13 +282,13 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               
               // Bottom overlay with page indicators
               if (_images.length > 1)
-                AnimatedOpacity(
-                  opacity: _showOverlay ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: AnimatedOpacity(
+                    opacity: _showOverlay ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 300),
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(

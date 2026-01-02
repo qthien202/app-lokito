@@ -23,12 +23,22 @@ class FeedRepositoryImpl implements FeedRepository {
     await _simulateDelay();
     
     if (page == 0) {
-      // Return initial posts
+      // Return initial posts (first 10 from 50 posts)
       final posts = MockPostsData.posts;
       return posts.take(limit).toList();
     } else {
-      // Return paginated posts
-      return MockPostsData.getMorePosts(page);
+      // Return paginated posts, but limit to total 50 posts
+      final allPosts = MockPostsData.posts;
+      final startIndex = page * limit;
+      
+      // If we've reached the end of our 50 posts, return empty list
+      if (startIndex >= allPosts.length) {
+        return [];
+      }
+      
+      // Return remaining posts up to the limit
+      final endIndex = (startIndex + limit).clamp(0, allPosts.length);
+      return allPosts.sublist(startIndex, endIndex);
     }
   }
 

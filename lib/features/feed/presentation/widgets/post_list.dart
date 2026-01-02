@@ -7,37 +7,11 @@ import 'package:lokito/i18n/strings.g.dart';
 
 import '../controllers/feed_controller.dart';
 
-class PostList extends ConsumerStatefulWidget {
+class PostList extends ConsumerWidget {
   const PostList({super.key});
 
   @override
-  ConsumerState<PostList> createState() => _PostListState();
-}
-
-class _PostListState extends ConsumerState<PostList> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      ref.read(feedControllerProvider.notifier).loadMorePosts();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final feedState = ref.watch(feedControllerProvider);
     
     // Show skeleton loading during initial load
