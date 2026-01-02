@@ -1,0 +1,22 @@
+{
+    "settings": "Cài đặt",
+    "theme": "Giao diện",
+    "language": "Ngôn ngữ",
+    "notifications": "Thông báo",
+    "manageNotifications": "Quản lý tùy chọn thông báo",
+    "account": "Tài khoản",
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "updateInfo": "Cập nhật thông tin cá nhân",
+    "privacy": "Quyền riêng tư & Bảo mật",
+    "privacySettings": "Quản lý cài đặt quyền riêng tư",
+    "logout": "Đăng xuất",
+    "confirmLogout": "Xác nhận đăng xuất",
+    "logoutMessage": "Bạn có chắc chắn muốn đăng xuất?",
+    "selectTheme": "Chọn giao diện",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "themeLight": "Sáng",
+    "themeDark": "Tối",
+    "themeSystem": "Hệ thống",
+    "chooseGradient": "Chọn màu nền",
+    "randomGradient": "Màu ngẫu nhiên"
+}

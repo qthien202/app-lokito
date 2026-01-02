@@ -38,7 +38,13 @@ class PostCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 18,
-                      backgroundImage: NetworkImage(post.authorAvatar),
+                      backgroundImage: NetworkImage(
+                        AvatarUtils.getAvatarUrl(
+                          avatarUrl: post.authorAvatar,
+                          name: post.authorName,
+                          size: 72, // 18 * 2 * 2 for high DPI
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Column(
@@ -133,7 +139,7 @@ class PostCard extends StatelessWidget {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.background,
+                      color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Padding(
@@ -145,15 +151,13 @@ class PostCard extends StatelessWidget {
                             Icon(
                               LucideIcons.cornerUpLeft,
                               size: 16,
-                              color: isDark ? Colors.white : AppColors.slate700,
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 10),
                             Text(
                               t.feed.reply,
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: isDark
-                                    ? Colors.white
-                                    : AppColors.slate700,
+                                color: theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -168,7 +172,7 @@ class PostCard extends StatelessWidget {
                   child: Container(
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.background,
+                      color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Row(
@@ -177,8 +181,8 @@ class PostCard extends StatelessWidget {
                         Icon(
                           post.isLiked ? Iconsax.heart : Iconsax.heart,
                           color: post.isLiked
-                              ? Colors.red
-                              : (isDark ? Colors.white : AppColors.slate700),
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.onSurfaceVariant,
                           size: 18,
                         ),
                         if (post.likes > 0) ...[
@@ -186,7 +190,7 @@ class PostCard extends StatelessWidget {
                           Text(
                             post.likes.toString(),
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: isDark ? Colors.white : AppColors.slate700,
+                              color: theme.colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
