@@ -1,0 +1,33 @@
+{
+    "title": "Feed",
+    "reply": "Reply",
+    "delete": "Delete",
+    "like": "Like",
+    "errorOccurred": "An error occurred",
+    "tryAgain": "Try again",
+    "loadingMore": "Loading more posts...",
+    "noMorePosts": "No more posts to load",
+    "pullToRefresh": "Pull to refresh",
+    "emptyState": {
+        "title": "No posts yet",
+        "subtitle": "Be the first to share something interesting with the community!",
+        "refresh": "Refresh"
+    },
+    "errors": {
+        "failedToUpdateLike": "Failed to update like",
+        "failedToDeletePost": "Failed to delete post",
+        "failedToCreatePost": "Failed to create post",
+        "failedToLoadPosts": "Failed to load posts",
+        "networkError": "Network error while loading posts",
+        "defaultFeed": "Feed error: $message"
+    },
+    "timeAgo": {
+        "justNow": "Just now",
+        "minutesAgo": "$count minutes ago",
+        "hoursAgo": "$count hours ago",
+        "daysAgo": "$count days ago",
+        "weeksAgo": "$count weeks ago",
+        "monthsAgo": "$count months ago",
+        "yearsAgo": "$count years ago"
+    }
+}

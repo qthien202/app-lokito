@@ -7,6 +7,7 @@
     "skip": "Skip",
     "next": "Next",
     "getStarted": "Get Started",
+    "cancel": "Cancel",
     "errors": {
         "network": "Network error. Please check your connection.",
         "unknown": "An unknown error occurred.",

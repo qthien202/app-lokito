@@ -7,6 +7,7 @@
     "skip": "Bỏ qua",
     "next": "Tiếp theo",
     "getStarted": "Bắt đầu ngay",
+    "cancel": "Hủy",
     "errors": {
         "network": "Lỗi kết nối mạng. Vui lòng kiểm tra lại.",
         "unknown": "Đã xảy ra lỗi không xác định.",

@@ -36,8 +36,22 @@ extension AppExceptionX on BuildContext {
         return t.auth.invalidOtp;
       case 'errorUnknown':
         return t.common.errors.unknown;
+      // Feed errors
+      case 'errorFailedToUpdateLike':
+        return t.feed.errors.failedToUpdateLike;
+      case 'errorFailedToDeletePost':
+        return t.feed.errors.failedToDeletePost;
+      case 'errorFailedToCreatePost':
+        return t.feed.errors.failedToCreatePost;
+      case 'errorFailedToLoadPosts':
+        return t.feed.errors.failedToLoadPosts;
+      case 'errorFeedNetwork':
+        return t.feed.errors.networkError;
       default:
         // Try to check if it's a raw Supabase error or something else
+        if (error.startsWith('feed:')) {
+          return t.feed.errors.defaultFeed(message: error.substring(5));
+        }
         return t.auth.errors.defaultAuth(message: error);
     }
   }

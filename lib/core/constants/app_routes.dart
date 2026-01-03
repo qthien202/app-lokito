@@ -11,4 +11,5 @@ class AppRoutes {
   static const search = '/search';
   static const chat = '/chat';
   static const profile = '/profile';
+  static const fullscreenImage = '/fullscreen-image';
 }

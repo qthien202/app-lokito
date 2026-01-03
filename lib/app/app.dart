@@ -11,17 +11,21 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeState = ref.watch(themeControllerProvider);
+    final currentLanguage = ref.watch(languageControllerProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Lokito',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      locale: TranslationProvider.of(context).flutterLocale, // use slang locale
+      themeMode: themeState.themeMode,
+      locale: currentLanguage.flutterLocale,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: AppLocaleUtils.supportedLocales,
       routerConfig: router,
+      // Force rebuild when language changes
+      key: ValueKey('app_${currentLanguage.languageCode}_${themeState.themeMode.index}'),
     );
   }
 }

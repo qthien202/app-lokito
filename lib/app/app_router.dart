@@ -46,7 +46,29 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       return null;
     },
-    routes: [mainShellRoute(), ...authRoutes(ref)],
+    routes: [
+      mainShellRoute(), 
+      GoRoute(
+        path: AppRoutes.fullscreenImage,
+        name: 'fullscreen-image',
+        builder: (context, state) {
+          final imageUrl = state.uri.queryParameters['imageUrl'] ?? '';
+          final heroTag = state.uri.queryParameters['heroTag'];
+          final title = state.uri.queryParameters['title'];
+          final imageUrls = state.uri.queryParameters['imageUrls']?.split(',');
+          final initialIndex = int.tryParse(state.uri.queryParameters['initialIndex'] ?? '0') ?? 0;
+          
+          return FullscreenImageViewer(
+            imageUrl: imageUrl,
+            heroTag: heroTag,
+            title: title,
+            imageUrls: imageUrls,
+            initialIndex: initialIndex,
+          );
+        },
+      ),
+      ...authRoutes(ref),
+    ],
     // Màn hình hiển thị khi lỗi hoặc đang chờ khởi tạo
     errorBuilder: (context, state) =>
         const Scaffold(body: Center(child: CircularProgressIndicator())),
