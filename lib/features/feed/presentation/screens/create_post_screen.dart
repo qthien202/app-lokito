@@ -44,7 +44,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
   }
 
   Future<void> _initializeCamera() async {
-    // Tạm thời vô hiệu hóa Camera để dứt điểm log rác khi dev tính năng khác
+    // Temporarily disable camera to stop log spam while developing other features
     /*
     final status = await Permission.camera.request();
     if (status != PermissionStatus.granted) {
