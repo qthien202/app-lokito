@@ -5,6 +5,7 @@ import 'package:lokito/core/core.dart';
 import 'package:lokito/app/routes/auth_routes.dart';
 import 'package:lokito/app/routes/main_shell_route.dart';
 import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:lokito/features/feed/presentation/screens/create_post_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshListenable = ref.watch(routerRefreshListenableProvider);
@@ -48,6 +49,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       mainShellRoute(), 
+      GoRoute(
+        path: AppRoutes.createPost,
+        name: 'create-post',
+        builder: (context, state) => const CreatePostScreen(),
+      ),
       GoRoute(
         path: AppRoutes.fullscreenImage,
         name: 'fullscreen-image',

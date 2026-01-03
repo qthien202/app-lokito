@@ -12,4 +12,5 @@ class AppRoutes {
   static const chat = '/chat';
   static const profile = '/profile';
   static const fullscreenImage = '/fullscreen-image';
+  static const createPost = '/create-post';
 }

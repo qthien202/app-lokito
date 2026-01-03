@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lokito/core/core.dart';
 import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:lokito/features/feed/presentation/widgets/post_list.dart';
@@ -76,7 +77,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           slivers: [
             appBar(theme: theme, context: context),
             PostList(),
-            SliverToBoxAdapter(child: SizedBox(height: 90)),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
       ),
@@ -106,13 +107,17 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       title: Text(t.feed.title, style: TextStyle(fontWeight: FontWeight.w700)),
 
       actions: [
-        Container(
-          padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface.withOpacity(0.8),
-            shape: BoxShape.circle,
+        GestureDetector(
+          onTap: () => context.push(AppRoutes.createPost),
+          child: Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface.withOpacity(0.8),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(LucideIcons.plus, size: 20),
           ),
-          child: Icon(LucideIcons.userPlus, size: 18),
         ),
       ],
     );

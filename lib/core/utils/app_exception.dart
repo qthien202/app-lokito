@@ -47,6 +47,11 @@ extension AppExceptionX on BuildContext {
         return t.feed.errors.failedToLoadPosts;
       case 'errorFeedNetwork':
         return t.feed.errors.networkError;
+      // Theme errors
+      case 'errorFailedToLoadTheme':
+        return 'Failed to load theme preference';
+      case 'errorFailedToSaveTheme':
+        return 'Failed to save theme preference';
       default:
         // Try to check if it's a raw Supabase error or something else
         if (error.startsWith('feed:')) {
