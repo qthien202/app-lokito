@@ -245,8 +245,9 @@ class PostCard extends StatelessWidget {
                               : theme.colorScheme.onSurfaceVariant,
                           size: 18,
                         ),
-                        if (post.likes > 0) ...[
-                          SizedBox(width: 4),
+                        // Only show count if there's at least one like from someone else
+                        if ((post.likes - (post.isLiked ? 1 : 0)) > 0) ...[
+                          const SizedBox(width: 4),
                           Text(
                             post.likes.toString(),
                             style: theme.textTheme.bodySmall?.copyWith(

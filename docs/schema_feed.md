@@ -48,6 +48,46 @@ create policy "Users can update own posts."
 create policy "Users can delete own posts."
   on posts for delete
   using ( auth.uid() = profile_id );
+
+-- 4. Create reactions table (Likes)
+create table public.reactions (
+  id uuid not null default gen_random_uuid() primary key,
+  post_id uuid references public.posts(id) on delete cascade not null,
+  profile_id uuid references public.profiles(id) on delete cascade not null,
+  type text default 'like', 
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  
+  unique(post_id, profile_id, type)
+);
+
+-- Enable RLS for reactions
+alter table public.reactions enable row level security;
+
+-- Reactions Policies
+create policy "Reactions are viewable by everyone" on reactions for select using (true);
+create policy "Users can react" on reactions for insert with check (auth.uid() = profile_id);
+create policy "Users can remove reaction" on reactions for delete using (auth.uid() = profile_id);
+
+-- 5. Trigger to sync likes_count (Counts every like)
+create or replace function public.handle_reaction()
+returns trigger as $$
+begin
+  if (TG_OP = 'INSERT') then
+    update public.posts set likes_count = likes_count + 1 where id = new.post_id;
+  elsif (TG_OP = 'DELETE') then
+    update public.posts set likes_count = likes_count - 1 where id = old.post_id;
+  end if;
+  return null;
+end;
+$$ language plpgsql;
+
+create trigger on_reaction_added
+  after insert on public.reactions
+  for each row execute procedure public.handle_reaction();
+
+create trigger on_reaction_removed
+  after delete on public.reactions
+  for each row execute procedure public.handle_reaction();
 ```
 
 ## Data Model Integration
