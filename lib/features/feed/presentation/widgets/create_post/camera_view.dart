@@ -26,7 +26,7 @@ class CameraView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Luôn hiển thị UI giả lập để dev các tính năng khác mà không bị vướng bởi log camera
+    // Always show placeholder UI to develop other features without being blocked by camera logs
     /*
     if (!isCameraInitialized ||
         cameraController == null ||

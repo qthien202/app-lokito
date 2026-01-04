@@ -14,6 +14,6 @@ abstract class FeedState with _$FeedState {
     @Default(0) int currentPage,
     String? error,
     @Default(false) bool isRefreshing,
-    @Default(true) bool isInitializing, // New field for initial load
+    @Default(true) bool isInitializing,
   }) = _FeedState;
 }

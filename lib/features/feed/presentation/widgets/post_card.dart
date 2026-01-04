@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:lokito/core/core.dart';
@@ -101,6 +103,7 @@ class PostCard extends StatelessWidget {
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () {
+                if (post.isUploading) return;
                 showFullscreenImage(
                   context,
                   imageUrl: post.imageUrl,
@@ -112,23 +115,49 @@ class PostCard extends StatelessWidget {
                 tag: 'post_image_${post.id}',
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(18),
-                  child: Image.network(
-                    post.imageUrl,
-                    fit: BoxFit.cover,
-                    height: 300,
-                    width: double.infinity,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 300,
-                        color: theme.colorScheme.surfaceVariant,
-                        child: Center(
-                          child: Icon(
-                            LucideIcons.imageOff,
-                            color: theme.colorScheme.onSurfaceVariant,
+                  child: Stack(
+                    children: [
+                      // Layer 1: Local image backdrop (Prevents flickering)
+                      if (post.localImagePath != null)
+                        Image.file(
+                          File(post.localImagePath!),
+                          fit: BoxFit.cover,
+                          height: 300,
+                          width: double.infinity,
+                        ),
+
+                      // Layer 2: Network image (Loads over local image)
+                      if (post.imageUrl.startsWith('http'))
+                        Image.network(
+                          post.imageUrl,
+                          fit: BoxFit.cover,
+                          height: 300,
+                          width: double.infinity,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const SizedBox.shrink(),
+                        ),
+
+                      // Layer 3: Modern Uploading Effect (Blur + Dim)
+                      if (post.isUploading)
+                        Positioned.fill(
+                          child: ClipRRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX: 10 * (1 - post.uploadProgress),
+                                sigmaY: 10 * (1 - post.uploadProgress),
+                              ),
+                              child: Container(
+                                color: Colors.black.withOpacity(
+                                  (0.6 * (1 - post.uploadProgress)).clamp(
+                                    0.0,
+                                    1.0,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      );
-                    },
+                    ],
                   ),
                 ),
               ),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lokito/i18n/strings.g.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:lokito/features/feed/presentation/controllers/create_post_state.dart';
+import 'package:lokito/shared/media_capture/media_capture_state.dart';
 
 class TopControls extends StatelessWidget {
-  final CreatePostStep currentStep;
+  final MediaCaptureStep currentStep;
   final bool hasImage;
   final VoidCallback onBack;
   final VoidCallback? onSend;

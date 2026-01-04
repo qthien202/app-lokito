@@ -1,24 +1,62 @@
 # Lokito App
 
-Một ứng dụng mạng xã hội hiện đại được xây dựng bằng Flutter.
+[![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat&logo=Flutter&logoColor=white)](https://flutter.dev)
+[![Riverpod](https://img.shields.io/badge/Riverpod-%2302569B.svg?style=flat)](https://riverpod.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com)
 
-## 🚀 Tính năng nổi bật
-- **Giao diện Modern Social**: Phong cách tràn viền, hào quang ánh sáng (Social Spotlight) tối ưu cho năm 2025.
-- **Glassmorphism**: Hiệu ứng kính mờ tinh tế trên các thẻ thông tin.
-- **Dark Mode**: Hỗ trợ toàn diện chế độ tối chân thực.
-- **Đa ngôn ngữ (L10n)**: Hỗ trợ linh hoạt Tiếng Anh và Tiếng Việt.
+A modern, high-performance social media application built with Flutter, focusing on premium aesthetics and seamless user experience.
 
-## 📁 Tài liệu (Documentation)
-Toàn bộ tài liệu chi tiết về dự án được lưu trữ trong thư mục `/docs`:
+[🇻🇳 Tiếng Việt](README_VI.md)
 
-- [Hướng dẫn Đa ngôn ngữ (Localization)](docs/LOCALIZATION.md)
+## 🚀 Key Features
 
-## 🛠 Công nghệ sử dụng
-- **Framework**: Flutter (Dart)
-- **Quản lý trạng thái**: Riverpod
-- **Backend**: Supabase
-- **Navigation**: GoRouter
-- **Design System**: Material 3 Custom
+- **Modern Social UI**: Edge-to-edge design with "Social Spotlight" aura, optimized for 2025 aesthetics.
+- **Glassmorphism**: Sophisticated blur effects and glass-textured cards for a premium feel.
+- **Optimistic Post Creation**: Immediate visual feedback when posting, with background upload progress.
+- **Media Capture**: Integrated custom camera and gallery picker for seamless content sharing.
+- **Dark Mode**: Fully implemented true-dark theme for enhanced visual comfort.
+- **Localization**: Full support for English and Vietnamese using Slang.
+
+## 🛠 Tech Stack
+
+- **Framework**: [Flutter](https://flutter.dev)
+- **State Management**: [Riverpod](https://riverpod.dev)
+- **Backend**: [Supabase](https://supabase.com) (Authentication, Database, Real-time)
+- **Image Storage**: [Cloudinary](https://cloudinary.com)
+- **Routing**: [GoRouter](https://pub.dev/packages/go_router)
+- **Architecture**: Clean Architecture (Feature-first)
+
+## 📁 Documentation
+
+Detailed guides and technical specifications:
+
+- [🔐 Auth & Profile Schema](docs/schema_auth.md)
+- [📝 Feed & Post Schema](docs/schema_feed.md)
+- [☁️ Cloudinary Integration](docs/cloudinary_service.md)
+- [🛤 Auth Flow](docs/auth_flow.md)
+- [🌍 Localization Guide](docs/localization.md)
+
+## 🏗 Getting Started
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/qthien202/app-lokito.git
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   flutter pub get
+   ```
+
+3. **Global Code Generation**:
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+
+4. **Run the application**:
+   ```bash
+   flutter run
+   ```
 
 ---
-*Phát triển bởi Quang Thiên*
+*Developed by [Quang Thiên](https://github.com/qthien202)*

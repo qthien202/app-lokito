@@ -13,6 +13,10 @@ abstract class PostModel with _$PostModel {
     required String content,
     @Default(false) bool isLiked,
     @Default(0) int likes,
+    @Default(false) bool isUploading, // New field for optimistic UI
+    @Default(0.0) double uploadProgress, // Upload progress (0.0 to 1.0)
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    String? localImagePath, // Path to local file for display before upload
     required DateTime createdAt,
   }) = _PostModel;
 

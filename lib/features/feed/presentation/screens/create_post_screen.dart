@@ -1,9 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lokito/features/feed/presentation/controllers/create_post_controller.dart';
-import 'package:lokito/features/feed/presentation/controllers/create_post_state.dart';
+import 'package:lokito/features/feed/presentation/controllers/feed_controller.dart';
 import 'package:lokito/features/feed/presentation/widgets/create_post/index.dart';
 import 'package:lokito/i18n/strings.g.dart';
+import 'package:lokito/shared/media_capture/media_capture_controller.dart';
+import 'package:lokito/shared/media_capture/media_capture_state.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
@@ -27,8 +30,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // CRITICAL: Stop the camera immediately when leaving the screen
-    ref.read(createPostControllerProvider.notifier).disposeCamera();
     _captionController.dispose();
     super.dispose();
   }
@@ -39,19 +40,19 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
       _initializeCamera();
     } else {
       // Inactive, Paused, Detached: KILL the camera to stop dropped frame logs
-      ref.read(createPostControllerProvider.notifier).disposeCamera();
+      ref.read(mediaCaptureControllerProvider.notifier).disposeCamera();
     }
   }
 
   Future<void> _initializeCamera() async {
-    // Tạm thời vô hiệu hóa Camera để dứt điểm log rác khi dev tính năng khác
+    // Temporarily disable camera to stop log spam while developing other features
     /*
     final status = await Permission.camera.request();
     if (status != PermissionStatus.granted) {
       if (mounted) _showPermissionDialog();
       return;
     }
-    await ref.read(createPostControllerProvider.notifier).initializeCamera();
+    await ref.read(mediaCaptureControllerProvider.notifier).initializeCamera();
     */
   }
 
@@ -79,29 +80,36 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
   }
 
   void _handleBack() {
-    final state = ref.read(createPostControllerProvider);
+    final state = ref.read(mediaCaptureControllerProvider);
     if (state.capturedImage != null) {
-      ref.read(createPostControllerProvider.notifier).retakePhoto();
+      ref.read(mediaCaptureControllerProvider.notifier).retakePhoto();
     } else {
       Navigator.pop(context);
     }
   }
 
   Future<void> _handleShare() async {
-    final success = await ref
-        .read(createPostControllerProvider.notifier)
-        .createPost(_captionController.text);
-    if (success && mounted) {
+    final state = ref.read(mediaCaptureControllerProvider);
+    final image = state.capturedImage;
+    if (image == null) return;
+
+    // Trigger creation in FeedController (Optimistic)
+    ref
+        .read(feedControllerProvider.notifier)
+        .createPost(content: _captionController.text, file: image);
+
+    // Close screen immediately
+    if (mounted) {
       Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(createPostControllerProvider);
-    final notifier = ref.read(createPostControllerProvider.notifier);
+    final state = ref.watch(mediaCaptureControllerProvider);
+    final notifier = ref.read(mediaCaptureControllerProvider.notifier);
 
-    ref.listen(createPostControllerProvider.select((s) => s.error), (
+    ref.listen(mediaCaptureControllerProvider.select((s) => s.error), (
       prev,
       next,
     ) {
@@ -115,72 +123,104 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen>
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            TopControls(
-              currentStep: state.capturedImage != null
-                  ? CreatePostStep.preview
-                  : CreatePostStep.camera,
-              hasImage: state.capturedImage != null,
-              onBack: _handleBack,
-              onSend: _handleShare,
-              onGallery: notifier.pickFromGallery,
-            ),
-
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (state.capturedImage != null)
-                      Column(
-                        children: [
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(60),
-                              color: const Color(0xFF1A1A1A),
-                            ),
-                            child: AspectRatio(
-                              aspectRatio: 1.0,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(60),
-                                child: PreviewView(
-                                  capturedImage: state.capturedImage,
-                                  onRetake: notifier.retakePhoto,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 48),
-                          CaptionInput(
-                            controller: _captionController,
-                            onSend: _handleShare,
-                          ),
-                        ],
-                      )
-                    else
-                      Expanded(
-                        child: CameraView(
-                          cameraController: state.cameraController,
-                          isCameraInitialized: state.isCameraInitialized,
-                          isFlashOn: state.isFlashOn,
-                          onTakePicture: notifier.takePicture,
-                          onPickFromGallery: notifier.pickFromGallery,
-                          onFlipCamera: notifier.flipCamera,
-                          onToggleFlash: notifier.toggleFlash,
-                          onShowHistory: () {},
-                        ),
-                      ),
-                  ],
-                ),
+      body: Stack(
+        children: [
+          if (state.capturedImage != null)
+            Positioned.fill(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.file(state.capturedImage!, fit: BoxFit.cover),
+                  BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                    child: Container(color: Colors.black.withOpacity(0.85)),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-          ],
-        ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                TopControls(
+                  currentStep: state.capturedImage != null
+                      ? MediaCaptureStep.preview
+                      : MediaCaptureStep.camera,
+                  hasImage: state.capturedImage != null,
+                  onBack: _handleBack,
+                  onSend: _handleShare,
+                  onGallery: notifier.pickFromGallery,
+                ),
+                Expanded(
+                  child: state.capturedImage != null
+                      ? SingleChildScrollView(
+                          physics: const ClampingScrollPhysics(),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 20),
+                                Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(32),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.5),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 10),
+                                      ),
+                                    ],
+                                  ),
+                                  child: AspectRatio(
+                                    aspectRatio: 1.0,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(32),
+                                      child: PreviewView(
+                                        capturedImage: state.capturedImage,
+                                        onRetake: notifier.retakePhoto,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 48),
+                                CaptionInput(
+                                  controller: _captionController,
+                                  onSend: _handleShare,
+                                ),
+                                const SizedBox(height: 24),
+                              ],
+                            ),
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: CameraView(
+                                  cameraController: state.cameraController,
+                                  isCameraInitialized:
+                                      state.isCameraInitialized,
+                                  isFlashOn: state.isFlashOn,
+                                  onTakePicture: notifier.takePicture,
+                                  onPickFromGallery: notifier.pickFromGallery,
+                                  onFlipCamera: notifier.flipCamera,
+                                  onToggleFlash: notifier.toggleFlash,
+                                  onShowHistory: () {},
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
