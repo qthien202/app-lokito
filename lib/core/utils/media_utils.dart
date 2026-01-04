@@ -7,9 +7,9 @@ class MediaUtils {
   /// [minWidth] and [minHeight] are used to limit the image dimensions.
   static Future<File?> compressImage(
     File file, {
-    int quality = 80,
-    int minWidth = 1080,
-    int minHeight = 1080,
+    int quality = 90,
+    int minWidth = 1920,
+    int minHeight = 1920,
   }) async {
     try {
       final filePath = file.absolute.path;

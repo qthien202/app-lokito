@@ -1,4 +1,36 @@
+[ 🇬🇧 English ](#english) | [ 🇻🇳 Tiếng Việt ](#vietnamese)
+
+---
+
+<a name="english"></a>
 # Lokito App
+
+A modern social media application built with Flutter.
+
+## 🚀 Key Features
+- **Modern Social UI**: Edge-to-edge design, Social Spotlight aura, optimized for 2025.
+- **Glassmorphism**: Sophisticated blur effects on cards.
+- **Dark Mode**: Comprehensive and true dark mode support.
+- **Localization (L10n)**: Flexible support for English and Vietnamese.
+
+## 📁 Documentation
+Detailed project documentation is stored in the `/docs` directory:
+
+- [Auth Schema / Schema Xác thực](docs/schema_auth.md)
+- [Feed Schema / Schema Bảng tin](docs/schema_feed.md)
+- [Cloudinary Service](docs/cloudinary_service.md)
+
+## 🛠 Tech Stack
+- **Framework**: Flutter (Dart)
+- **State Management**: Riverpod
+- **Backend**: Supabase
+- **Navigation**: GoRouter
+- **Design System**: Material 3 Custom
+
+---
+
+<a name="vietnamese"></a>
+# Ứng dụng Lokito
 
 Một ứng dụng mạng xã hội hiện đại được xây dựng bằng Flutter.
 
@@ -11,7 +43,9 @@ Một ứng dụng mạng xã hội hiện đại được xây dựng bằng Fl
 ## 📁 Tài liệu (Documentation)
 Toàn bộ tài liệu chi tiết về dự án được lưu trữ trong thư mục `/docs`:
 
-- [Hướng dẫn Đa ngôn ngữ (Localization)](docs/LOCALIZATION.md)
+- [Schema Xác thực / Auth Schema](docs/schema_auth.md)
+- [Schema Bảng tin / Feed Schema](docs/schema_feed.md)
+- [Dịch vụ Cloudinary](docs/cloudinary_service.md)
 
 ## 🛠 Công nghệ sử dụng
 - **Framework**: Flutter (Dart)
@@ -21,4 +55,4 @@ Toàn bộ tài liệu chi tiết về dự án được lưu trữ trong thư m
 - **Design System**: Material 3 Custom
 
 ---
-*Phát triển bởi Quang Thiên*
+*Developed by Quang Thiên*
