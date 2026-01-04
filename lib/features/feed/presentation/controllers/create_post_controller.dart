@@ -41,13 +41,13 @@ class CreatePostController extends Notifier<CreatePostState> {
 
       await disposeCamera();
 
-      // Small delay to avoid conflict with screen transition animation on Android
+      // Delay nhỏ để tránh xung đột với hiệu ứng chuyển màn hình trên Android
       await Future.delayed(const Duration(milliseconds: 100));
 
       final controller = CameraController(
         camera,
         ResolutionPreset
-            .medium, // Medium is stable and prevents BufferQueue log spam
+            .medium, // Medium cực kỳ ổn định, không gây log rác BufferQueue
         enableAudio: false,
       );
 

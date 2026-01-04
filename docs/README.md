@@ -7,12 +7,14 @@ Chào mừng bạn đến với kho tài liệu của dự án **Lokito**. Tại
 ### 🇻🇳 Tiếng Việt
 1. [**Đa ngôn ngữ (Localization)**](./vi/localization.md)
 2. [**Luồng Xác thực (Auth Flow)**](./vi/auth_flow.md)
-3. [**Kiến trúc dự án (Architecture)**](#) *(Sắp ra mắt)*
+3. [**Dịch vụ Cloudinary (Cloudinary Service)**](./cloudinary_service.md)
+4. [**Kiến trúc dự án (Architecture)**](#) *(Sắp ra mắt)*
 
 ### 🇺🇸 English
 1. [**Localization Guide**](./en/localization.md)
 2. [**Authentication Flow**](./en/auth_flow.md)
-3. [**Project Architecture**](#) *(Coming soon)*
+3. [**Cloudinary Service**](./cloudinary_service.md)
+4. [**Project Architecture**](#) *(Coming soon)*
 
 ---
 *Lokito Documentation - 2026*

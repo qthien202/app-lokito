@@ -1,6 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../data/feed_repository.dart';
-import '../../domain/post_model.dart';
 import 'feed_state.dart';
 
 class FeedController extends Notifier<FeedState> {
@@ -9,11 +11,11 @@ class FeedController extends Notifier<FeedState> {
   @override
   FeedState build() {
     _repository = ref.watch(feedRepositoryProvider);
-    
+
     // Initialize with initializing state
     state = const FeedState(isInitializing: true, isLoading: true);
     _loadInitialPosts();
-    
+
     return state;
   }
 
@@ -51,7 +53,7 @@ class FeedController extends Notifier<FeedState> {
     try {
       final nextPage = state.currentPage + 1;
       final newPosts = await _repository.getPosts(page: nextPage, limit: 10);
-      
+
       state = state.copyWith(
         posts: [...state.posts, ...newPosts],
         isLoadingMore: false,
@@ -104,7 +106,7 @@ class FeedController extends Notifier<FeedState> {
 
     try {
       final updatedPost = await _repository.toggleLike(postId, newLikedState);
-      
+
       // Update with server response
       final finalPosts = [...state.posts];
       final finalIndex = finalPosts.indexWhere((p) => p.id == postId);
@@ -126,8 +128,10 @@ class FeedController extends Notifier<FeedState> {
   Future<void> deletePost(String postId) async {
     try {
       await _repository.deletePost(postId);
-      
-      final updatedPosts = state.posts.where((post) => post.id != postId).toList();
+
+      final updatedPosts = state.posts
+          .where((post) => post.id != postId)
+          .toList();
       state = state.copyWith(posts: updatedPosts);
     } catch (e) {
       state = state.copyWith(error: 'errorFailedToDeletePost');
@@ -136,17 +140,15 @@ class FeedController extends Notifier<FeedState> {
 
   Future<void> createPost({
     required String content,
-    String? imageUrl,
+    required File imagFile,
   }) async {
     try {
       final newPost = await _repository.createPost(
         content: content,
-        imageUrl: imageUrl,
+        imageFile: imagFile,
       );
-      
-      state = state.copyWith(
-        posts: [newPost, ...state.posts],
-      );
+
+      state = state.copyWith(posts: [newPost, ...state.posts]);
     } catch (e) {
       state = state.copyWith(error: 'errorFailedToCreatePost');
     }
