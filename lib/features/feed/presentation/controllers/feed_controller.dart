@@ -161,6 +161,7 @@ class FeedController extends Notifier<FeedState> {
       authorAvatar: user.avatarUrl ?? '',
       content: content,
       imageUrl: file.path, // Use local path initially
+      fullImageUrl: file.path,
       localImagePath: file.path,
       createdAt: DateTime.now(),
       isUploading: true,

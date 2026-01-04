@@ -10,6 +10,7 @@ abstract class PostModel with _$PostModel {
     required String authorName,
     required String authorAvatar,
     required String imageUrl,
+    required String fullImageUrl,
     required String content,
     @Default(false) bool isLiked,
     @Default(0) int likes,

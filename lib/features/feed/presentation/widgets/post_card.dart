@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:lokito/core/core.dart';
 import 'package:lokito/i18n/strings.g.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../domain/post_model.dart';
@@ -40,7 +42,7 @@ class PostCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 18,
-                      backgroundImage: NetworkImage(
+                      backgroundImage: CachedNetworkImageProvider(
                         AvatarUtils.getAvatarUrl(
                           avatarUrl: post.authorAvatar,
                           name: post.authorName,
@@ -60,7 +62,10 @@ class PostCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          timeago.format(post.createdAt, locale: 'vi'),
+                          timeago.format(
+                            post.createdAt,
+                            locale: LocaleSettings.currentLocale.languageCode,
+                          ),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant
                                 .withOpacity(0.6),
@@ -92,21 +97,24 @@ class PostCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              post.content,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface,
-                height: 1.4,
+            if (post.content.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                post.content,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  height: 1.4,
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () {
                 if (post.isUploading) return;
                 showFullscreenImage(
                   context,
-                  imageUrl: post.imageUrl,
+                  imageUrl: post.fullImageUrl,
+                  postId: post.id,
                   heroTag: 'post_image_${post.id}',
                   title: post.authorName,
                 );
@@ -128,13 +136,36 @@ class PostCard extends StatelessWidget {
 
                       // Layer 2: Network image (Loads over local image)
                       if (post.imageUrl.startsWith('http'))
-                        Image.network(
-                          post.imageUrl,
+                        CachedNetworkImage(
+                          imageUrl: post.imageUrl,
                           fit: BoxFit.cover,
                           height: 300,
                           width: double.infinity,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const SizedBox.shrink(),
+                          placeholder: (context, url) =>
+                              post.localImagePath != null
+                              ? const SizedBox.shrink()
+                              : Shimmer.fromColors(
+                                  baseColor: theme.colorScheme.surfaceVariant,
+                                  highlightColor: theme
+                                      .colorScheme
+                                      .surfaceVariant
+                                      .withOpacity(0.5),
+                                  child: Container(
+                                    height: 300,
+                                    width: double.infinity,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                          errorWidget: (context, url, error) => Container(
+                            height: 300,
+                            color: theme.colorScheme.surfaceVariant,
+                            child: Center(
+                              child: Icon(
+                                LucideIcons.imageOff,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
                         ),
 
                       // Layer 3: Modern Uploading Effect (Blur + Dim)
