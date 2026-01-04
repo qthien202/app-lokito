@@ -1,16 +1,22 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lokito/core/core.dart';
+import 'package:lokito/core/services/media_storage_service.dart';
+import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
 
 import '../../data/feed_repository.dart';
+import '../../domain/post_model.dart';
 import 'feed_state.dart';
 
 class FeedController extends Notifier<FeedState> {
   late final FeedRepository _repository;
+  late final MediaStorageService _mediaStorage;
 
   @override
   FeedState build() {
     _repository = ref.watch(feedRepositoryProvider);
+    _mediaStorage = ref.watch(mediaStorageProvider);
 
     // Initialize with initializing state
     state = const FeedState(isInitializing: true, isLoading: true);
@@ -138,19 +144,72 @@ class FeedController extends Notifier<FeedState> {
     }
   }
 
-  Future<void> createPost({
-    required String content,
-    required File imagFile,
-  }) async {
+  void addNewPost(PostModel post) {
+    state = state.copyWith(posts: [post, ...state.posts]);
+  }
+
+  Future<void> createPost({required String content, required File file}) async {
+    final user = ref.read(authControllerProvider).user;
+    if (user == null) return;
+
+    final tempId = IdGenerator.generate();
+
+    // 1. Create Optimistic Post (Uploading State)
+    final tempPost = PostModel(
+      id: tempId,
+      authorName: user.username,
+      authorAvatar: user.avatarUrl ?? '',
+      content: content,
+      imageUrl: file.path, // Use local path initially
+      localImagePath: file.path,
+      createdAt: DateTime.now(),
+      isUploading: true,
+    );
+
+    // Update UI immediately (Optimistic add)
+    state = state.copyWith(posts: [tempPost, ...state.posts]);
+
     try {
-      final newPost = await _repository.createPost(
-        content: content,
-        imageFile: imagFile,
+      // 2. Compress & Upload
+      final compressed = await MediaUtils.compressImage(file);
+      final remoteUrl = await _mediaStorage.uploadPostMedia(
+        compressed ?? file,
+        tempId,
+        onProgress: (count, total) {
+          final progress = count / total;
+          state = state.copyWith(
+            posts: state.posts.map((p) {
+              if (p.id == tempId) {
+                return p.copyWith(uploadProgress: progress);
+              }
+              return p;
+            }).toList(),
+          );
+        },
       );
 
-      state = state.copyWith(posts: [newPost, ...state.posts]);
+      if (remoteUrl == null) throw Exception('Upload failed');
+
+      // 3. Create in DB (using the same ID)
+      final finalPost = tempPost.copyWith(
+        imageUrl: remoteUrl,
+        isUploading: false,
+        // Keep localImagePath to prevent flicker during transition to network image
+      );
+
+      await _repository.createPost(post: finalPost);
+
+      // 4. Update UI with final post (Replace temp post)
+      state = state.copyWith(
+        posts: state.posts.map((p) => p.id == tempId ? finalPost : p).toList(),
+      );
     } catch (e) {
-      state = state.copyWith(error: 'errorFailedToCreatePost');
+      // On failure, remove the temp post
+      // In a real app, we might set isError=true and allow retry
+      state = state.copyWith(
+        posts: state.posts.where((p) => p.id != tempId).toList(),
+      );
+      print('Create post failed: $e');
     }
   }
 

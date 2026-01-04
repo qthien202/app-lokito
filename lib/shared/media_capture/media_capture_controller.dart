@@ -1,24 +1,27 @@
 import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'create_post_state.dart';
 
-class CreatePostController extends Notifier<CreatePostState> {
+import 'media_capture_state.dart';
+
+class MediaCaptureController extends Notifier<MediaCaptureState> {
   final ImagePicker _picker = ImagePicker();
+  CameraController? _currentController;
 
   @override
-  CreatePostState build() {
+  MediaCaptureState build() {
     ref.onDispose(() {
-      // Disposing the controller when the provider is destroyed
-      // We don't use 'state' here to avoid triggering unwanted reads during dispose
+      _currentController?.dispose();
     });
-    return const CreatePostState();
+    return const MediaCaptureState();
   }
 
   Future<void> disposeCamera() async {
-    final controller = state.cameraController;
+    final controller = _currentController;
     if (controller != null) {
+      _currentController = null;
       state = state.copyWith(
         cameraController: null,
         isCameraInitialized: false,
@@ -53,6 +56,7 @@ class CreatePostController extends Notifier<CreatePostState> {
 
       await controller.initialize();
 
+      _currentController = controller;
       state = state.copyWith(
         cameras: cameras,
         cameraController: controller,
@@ -70,7 +74,7 @@ class CreatePostController extends Notifier<CreatePostState> {
       final XFile image = await state.cameraController!.takePicture();
       state = state.copyWith(
         capturedImage: File(image.path),
-        currentStep: CreatePostStep.preview,
+        currentStep: MediaCaptureStep.preview,
       );
     } catch (e) {
       state = state.copyWith(error: 'failedToTakePhoto');
@@ -86,7 +90,7 @@ class CreatePostController extends Notifier<CreatePostState> {
       if (image != null) {
         state = state.copyWith(
           capturedImage: File(image.path),
-          currentStep: CreatePostStep.preview,
+          currentStep: MediaCaptureStep.preview,
         );
       }
     } catch (e) {
@@ -132,6 +136,7 @@ class CreatePostController extends Notifier<CreatePostState> {
 
       await controller.initialize();
 
+      _currentController = controller;
       state = state.copyWith(
         cameraController: controller,
         isCameraInitialized: true,
@@ -148,29 +153,16 @@ class CreatePostController extends Notifier<CreatePostState> {
   void retakePhoto() {
     state = state.copyWith(
       capturedImage: null,
-      currentStep: CreatePostStep.camera,
+      currentStep: MediaCaptureStep.camera,
     );
   }
 
   void clearError() {
     state = state.copyWith(error: null);
   }
-
-  Future<bool> createPost(String content) async {
-    if (state.capturedImage == null) return false;
-    state = state.copyWith(isLoading: true);
-    try {
-      await Future.delayed(const Duration(seconds: 2));
-      state = state.copyWith(isLoading: false);
-      return true;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'failedToCreatePost');
-      return false;
-    }
-  }
 }
 
-final createPostControllerProvider =
-    NotifierProvider.autoDispose<CreatePostController, CreatePostState>(
-      CreatePostController.new,
+final mediaCaptureControllerProvider =
+    NotifierProvider.autoDispose<MediaCaptureController, MediaCaptureState>(
+      MediaCaptureController.new,
     );

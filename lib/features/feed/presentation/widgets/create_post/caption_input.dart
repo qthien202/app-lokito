@@ -13,39 +13,52 @@ class CaptionInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
       ),
-      textAlign: TextAlign.center,
-      onSubmitted: (_) => onSend(),
-      decoration: InputDecoration(
-        hintText: t.feed.createPost.addCaption,
-        hintStyle: TextStyle(
-          color: Colors.white.withOpacity(0.4),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(
+          color: Colors.white,
           fontSize: 16,
+          fontWeight: FontWeight.w400,
+          height: 1.4,
         ),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
-        // Ensure ALL borders are none to avoid "double input" look
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 18,
+        textAlign: TextAlign.start,
+        minLines: 1,
+        maxLines: 4,
+        textCapitalization: TextCapitalization.sentences,
+        onSubmitted: (_) => onSend(),
+        decoration: InputDecoration(
+          hintText: t.feed.createPost.addCaption,
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.4),
+            fontSize: 16,
+          ),
+          filled: true,
+          fillColor: Colors.transparent,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 12),
+            child: Icon(
+              Icons.edit_outlined,
+              color: Colors.white.withOpacity(0.6),
+              size: 20,
+            ),
+          ),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
+          ),
         ),
       ),
     );

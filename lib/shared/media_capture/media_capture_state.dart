@@ -1,22 +1,23 @@
 import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'create_post_state.freezed.dart';
+part 'media_capture_state.freezed.dart';
 
-enum CreatePostStep { camera, preview, caption }
+enum MediaCaptureStep { camera, preview, caption }
 
 @freezed
-abstract class CreatePostState with _$CreatePostState {
-  const factory CreatePostState({
+abstract class MediaCaptureState with _$MediaCaptureState {
+  const factory MediaCaptureState({
     @Default([]) List<CameraDescription> cameras,
     CameraController? cameraController,
     @Default(false) bool isCameraInitialized,
     @Default(false) bool isFlashOn,
     @Default(true) bool isRearCamera,
     File? capturedImage,
-    @Default(CreatePostStep.camera) CreatePostStep currentStep,
+    @Default(MediaCaptureStep.camera) MediaCaptureStep currentStep,
     @Default(false) bool isLoading,
     String? error,
-  }) = _CreatePostState;
+  }) = _MediaCaptureState;
 }
