@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lokito/core/constants/supabase_constants.dart';
 import 'package:lokito/core/provider/supabase_provider.dart';
+import 'package:lokito/core/services/media_storage_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'post_mapper.dart';
 import '../domain/post_model.dart';
-import 'mock_posts_data.dart';
 
 abstract class FeedRepository {
   Future<List<PostModel>> getPosts({int page = 0, int limit = 10});
@@ -15,77 +16,104 @@ abstract class FeedRepository {
 
 class FeedRepositoryImpl implements FeedRepository {
   final SupabaseClient _supabaseClient;
+  final CloudinaryService _cloudinary;
 
-  FeedRepositoryImpl(this._supabaseClient);
-
-  // Simulate network delay
-  Future<void> _simulateDelay() async {
-    await Future.delayed(
-      Duration(
-        milliseconds: 800 + (DateTime.now().millisecondsSinceEpoch % 400),
-      ),
-    );
-  }
+  FeedRepositoryImpl(this._supabaseClient, this._cloudinary);
 
   @override
   Future<List<PostModel>> getPosts({int page = 0, int limit = 10}) async {
-    await _simulateDelay();
+    final from = page * limit;
+    final to = from + limit - 1;
+    final currentUser = _supabaseClient.auth.currentUser;
 
-    if (page == 0) {
-      // Return initial posts (first 10 from 50 posts)
-      final posts = MockPostsData.posts;
-      return posts.take(limit).toList();
-    } else {
-      // Return paginated posts, but limit to total 50 posts
-      final allPosts = MockPostsData.posts;
-      final startIndex = page * limit;
+    try {
+      final response = await _supabaseClient
+          .from(SupabaseConstants.postsTable)
+          .select('*, profiles(username, avatar_url)')
+          .order('created_at', ascending: false)
+          .range(from, to);
 
-      // If we've reached the end of our 50 posts, return empty list
-      if (startIndex >= allPosts.length) {
-        return [];
+      final List<dynamic> data = response as List<dynamic>;
+      final postIds = data.map((json) => json['id'] as String).toList();
+
+      // Fetch liked post IDs for current user
+      final Set<String> likedPostIds = {};
+      if (currentUser != null && postIds.isNotEmpty) {
+        final reactionsResponse = await _supabaseClient
+            .from(SupabaseConstants.reactionsTable)
+            .select('post_id')
+            .eq('profile_id', currentUser.id)
+            .inFilter('post_id', postIds);
+
+        for (final row in reactionsResponse as List) {
+          likedPostIds.add(row['post_id'] as String);
+        }
       }
 
-      // Return remaining posts up to the limit
-      final endIndex = (startIndex + limit).clamp(0, allPosts.length);
-      return allPosts.sublist(startIndex, endIndex);
+      final posts = PostMapper.fromSupabaseList(
+        data,
+        likedPostIds: likedPostIds,
+      );
+
+      return posts
+          .map(
+            (post) =>
+                post.copyWith(imageUrl: _cloudinary.getPostImageUrl(post.id)),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to fetch posts: $e');
     }
   }
 
   @override
   Future<PostModel> toggleLike(String postId, bool isLiked) async {
-    await _simulateDelay();
+    final currentUser = _supabaseClient.auth.currentUser;
+    if (currentUser == null) throw Exception('User not logged in');
 
-    // Find the post and toggle like
-    final posts = MockPostsData.posts;
-    final postIndex = posts.indexWhere((post) => post.id == postId);
+    try {
+      if (isLiked) {
+        // Add like
+        await _supabaseClient.from(SupabaseConstants.reactionsTable).insert({
+          'post_id': postId,
+          'profile_id': currentUser.id,
+          'type': 'like',
+        });
+      } else {
+        // Remove like
+        await _supabaseClient
+            .from(SupabaseConstants.reactionsTable)
+            .delete()
+            .eq('post_id', postId)
+            .eq('profile_id', currentUser.id);
+      }
 
-    if (postIndex != -1) {
-      final post = posts[postIndex];
-      final updatedPost = post.copyWith(
-        isLiked: isLiked,
-        likes: isLiked ? post.likes + 1 : post.likes - 1,
-      );
+      // Fetch updated post data
+      final response = await _supabaseClient
+          .from(SupabaseConstants.postsTable)
+          .select('*, profiles(username, avatar_url)')
+          .eq('id', postId)
+          .single();
 
-      // Update the mock data (in real app, this would be API call)
-      posts[postIndex] = updatedPost;
-      return updatedPost;
+      final post = PostMapper.fromSupabase(response, isLiked: isLiked);
+      return post.copyWith(imageUrl: _cloudinary.getPostImageUrl(post.id));
+    } catch (e) {
+      throw Exception('Failed to toggle like: $e');
     }
-
-    throw Exception('Post not found');
   }
 
   @override
   Future<void> deletePost(String postId) async {
-    await _simulateDelay();
+    try {
+      await _supabaseClient
+          .from(SupabaseConstants.postsTable)
+          .delete()
+          .eq('id', postId);
 
-    // Delete from mock data
-    final posts = MockPostsData.posts;
-    posts.removeWhere((post) => post.id == postId);
-
-    // Delete image from Cloudinary
-    try {} catch (e) {
-      print('Failed to delete image from Cloudinary: $e');
-      // Don't throw error, post is already deleted from data
+      // Also delete from Cloudinary
+      await _cloudinary.deletePostMedia(postId);
+    } catch (e) {
+      throw Exception('Failed to delete post: $e');
     }
   }
 
@@ -97,19 +125,15 @@ class FeedRepositoryImpl implements FeedRepository {
     }
 
     try {
-      // Insert post into Supabase
-      // Note: We need to match the table schema.
-      // Usually: id, profile_id, content, image_url, created_at
       final postData = {
         'id': post.id,
-        'profile_id': currentUser.id, // Assumes relation to profiles table
+        'profile_id': currentUser.id,
         'content': post.content,
-        'image_url': post.imageUrl,
+        'image_url': post
+            .imageUrl, // We store the real URL but getPosts will optimize it
       };
 
       await _supabaseClient.from(SupabaseConstants.postsTable).insert(postData);
-      MockPostsData.posts.insert(0, post);
-
       return post;
     } catch (e) {
       throw Exception('Failed to create post: $e');
@@ -117,8 +141,8 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 }
 
-// Riverpod provider with proper DI
 final feedRepositoryProvider = Provider<FeedRepository>((ref) {
   final supabaseClient = ref.watch(supabaseClientProvider);
-  return FeedRepositoryImpl(supabaseClient);
+  final cloudinary = ref.watch(cloudinaryServiceProvider);
+  return FeedRepositoryImpl(supabaseClient, cloudinary);
 });

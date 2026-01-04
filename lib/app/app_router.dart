@@ -48,7 +48,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      mainShellRoute(), 
+      mainShellRoute(),
       GoRoute(
         path: AppRoutes.createPost,
         name: 'create-post',
@@ -59,13 +59,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'fullscreen-image',
         builder: (context, state) {
           final imageUrl = state.uri.queryParameters['imageUrl'] ?? '';
+          final postId = state.uri.queryParameters['postId'];
           final heroTag = state.uri.queryParameters['heroTag'];
           final title = state.uri.queryParameters['title'];
           final imageUrls = state.uri.queryParameters['imageUrls']?.split(',');
-          final initialIndex = int.tryParse(state.uri.queryParameters['initialIndex'] ?? '0') ?? 0;
-          
+          final initialIndex =
+              int.tryParse(state.uri.queryParameters['initialIndex'] ?? '0') ??
+              0;
+
           return FullscreenImageViewer(
             imageUrl: imageUrl,
+            postId: postId,
             heroTag: heroTag,
             title: title,
             imageUrls: imageUrls,

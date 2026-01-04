@@ -1,11 +1,17 @@
+import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:shimmer/shimmer.dart';
+import '../../features/feed/presentation/controllers/feed_controller.dart';
 import '../constants/app_routes.dart';
 
-class FullscreenImageViewer extends StatefulWidget {
+class FullscreenImageViewer extends ConsumerStatefulWidget {
   final String imageUrl;
+  final String? postId;
   final String? heroTag;
   final String? title;
   final List<String>? imageUrls;
@@ -14,6 +20,7 @@ class FullscreenImageViewer extends StatefulWidget {
   const FullscreenImageViewer({
     super.key,
     required this.imageUrl,
+    this.postId,
     this.heroTag,
     this.title,
     this.imageUrls,
@@ -21,12 +28,13 @@ class FullscreenImageViewer extends StatefulWidget {
   });
 
   @override
-  State<FullscreenImageViewer> createState() => _FullscreenImageViewerState();
+  ConsumerState<FullscreenImageViewer> createState() =>
+      _FullscreenImageViewerState();
 }
 
-class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
+class _FullscreenImageViewerState extends ConsumerState<FullscreenImageViewer> {
   late PageController _pageController;
-  
+
   int _currentIndex = 0;
   bool _showOverlay = true;
   bool _isDismissing = false;
@@ -37,7 +45,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
     super.initState();
     _currentIndex = widget.initialIndex ?? 0;
     _pageController = PageController(initialPage: _currentIndex);
-    
+
     // Hide system UI for immersive experience
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
   }
@@ -45,7 +53,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
   @override
   void dispose() {
     _pageController.dispose();
-    
+
     // Restore system UI
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
@@ -67,7 +75,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
     if (!_isDismissing) return;
-    
+
     setState(() {
       _dismissOffset += details.delta.dy;
     });
@@ -75,13 +83,14 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
 
   void _onVerticalDragEnd(DragEndDetails details) {
     if (!_isDismissing) return;
-    
+
     _isDismissing = false;
-    
+
     // If dragged far enough or with enough velocity, dismiss
-    final shouldDismiss = _dismissOffset.abs() > 100 || 
-                         details.velocity.pixelsPerSecond.dy.abs() > 300;
-    
+    final shouldDismiss =
+        _dismissOffset.abs() > 100 ||
+        details.velocity.pixelsPerSecond.dy.abs() > 300;
+
     if (shouldDismiss) {
       _closeViewer();
     } else {
@@ -103,10 +112,70 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
     return [widget.imageUrl];
   }
 
+  Widget _buildErrorWidget() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.grey[900],
+      child: const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(LucideIcons.imageOff, color: Colors.white54, size: 64),
+            SizedBox(height: 16),
+            Text(
+              'Failed to load image',
+              style: TextStyle(color: Colors.white54, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImage(String url, bool isPrimary) {
+    if (url.startsWith('http')) {
+      return CachedNetworkImage(
+        imageUrl: url,
+        fit: BoxFit.contain,
+        // If this is the primary high-res image, show the low-res one as placeholder
+        placeholder: (context, _) => isPrimary
+            ? CachedNetworkImage(imageUrl: widget.imageUrl, fit: BoxFit.contain)
+            : Shimmer.fromColors(
+                baseColor: Colors.grey[900]!,
+                highlightColor: Colors.grey[800]!,
+                child: Container(color: Colors.white),
+              ),
+        errorWidget: (context, _, __) => _buildErrorWidget(),
+      );
+    } else {
+      return Image.file(
+        File(url),
+        fit: BoxFit.contain,
+        errorBuilder: (context, _, __) => _buildErrorWidget(),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // If we have a postId, watch the post from the feed state to be reactive
+    final post = widget.postId != null
+        ? ref.watch(
+            feedControllerProvider.select(
+              (state) =>
+                  state.posts.where((p) => p.id == widget.postId).firstOrNull,
+            ),
+          )
+        : null;
+
+    final displayImageUrl = post?.fullImageUrl ?? widget.imageUrl;
+
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(1.0 - (_dismissOffset.abs() / 400).clamp(0.0, 0.8)),
+      backgroundColor: Colors.black.withOpacity(
+        1.0 - (_dismissOffset.abs() / 400).clamp(0.0, 0.8),
+      ),
       body: GestureDetector(
         onVerticalDragStart: _onVerticalDragStart,
         onVerticalDragUpdate: _onVerticalDragUpdate,
@@ -126,71 +195,31 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                 itemCount: _images.length,
                 itemBuilder: (context, index) {
                   final imageUrl = _images[index];
-                  final isCurrentImage = index == (widget.initialIndex ?? 0) && 
-                                       imageUrl == widget.imageUrl;
-                  
+                  final isCurrentImage = index == (widget.initialIndex ?? 0);
+
+                  // If this is the current image and we have a reactive post, use its URL
+                  final currentImageUrl = isCurrentImage
+                      ? displayImageUrl
+                      : imageUrl;
+
                   return GestureDetector(
                     onTap: _onImageTap,
                     child: Center(
                       child: Hero(
-                        tag: isCurrentImage && widget.heroTag != null 
-                            ? widget.heroTag! 
+                        tag: isCurrentImage && widget.heroTag != null
+                            ? widget.heroTag!
                             : 'image_$index',
                         child: InteractiveViewer(
                           minScale: 0.5,
                           maxScale: 4.0,
-                          child: Image.network(
-                            imageUrl,
-                            fit: BoxFit.contain,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                      : null,
-                                  color: Colors.white,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: double.infinity,
-                                height: double.infinity,
-                                color: Colors.grey[900],
-                                child: const Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        LucideIcons.imageOff,
-                                        color: Colors.white54,
-                                        size: 64,
-                                      ),
-                                      SizedBox(height: 16),
-                                      Text(
-                                        'Failed to load image',
-                                        style: TextStyle(
-                                          color: Colors.white54,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                          child: _buildImage(currentImageUrl, isCurrentImage),
                         ),
                       ),
                     ),
                   );
                 },
               ),
-              
+
               // Top overlay
               Positioned(
                 top: 0,
@@ -212,7 +241,10 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                     ),
                     child: SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -279,7 +311,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                   ),
                 ),
               ),
-              
+
               // Bottom overlay with page indicators
               if (_images.length > 1)
                 Positioned(
@@ -308,7 +340,9 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
                             children: List.generate(
                               _images.length,
                               (index) => Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 width: 8,
                                 height: 8,
                                 decoration: BoxDecoration(
@@ -337,6 +371,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
 void showFullscreenImage(
   BuildContext context, {
   required String imageUrl,
+  String? postId,
   String? heroTag,
   String? title,
   List<String>? imageUrls,
@@ -344,14 +379,17 @@ void showFullscreenImage(
 }) {
   final queryParams = <String, String>{
     'imageUrl': imageUrl,
+    if (postId != null) 'postId': postId,
     if (heroTag != null) 'heroTag': heroTag,
     if (title != null) 'title': title,
     if (imageUrls != null) 'imageUrls': imageUrls.join(','),
     if (initialIndex != null) 'initialIndex': initialIndex.toString(),
   };
-  
-  context.push(Uri(
-    path: AppRoutes.fullscreenImage,
-    queryParameters: queryParams,
-  ).toString());
+
+  context.push(
+    Uri(
+      path: AppRoutes.fullscreenImage,
+      queryParameters: queryParams,
+    ).toString(),
+  );
 }
