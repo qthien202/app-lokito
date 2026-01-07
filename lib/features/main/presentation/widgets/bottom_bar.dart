@@ -179,7 +179,14 @@ class _LiquidGlassBottomBarState extends State<LiquidGlassBottomBar> {
                     // Layer 2: Content (Tabs) + Indicator - Wrapped in _TabIndicator
                     _TabIndicator(
                       fake: widget.fake,
-                      visible: widget.showIndicator,
+                      visible:
+                          widget.showIndicator &&
+                          !(widget.selectedIndex >= 0 &&
+                                  widget.selectedIndex < widget.tabs.length
+                              ? widget
+                                    .tabs[widget.selectedIndex]
+                                    .disableIndicator
+                              : false),
                       tabIndex: widget.selectedIndex,
                       tabCount: widget.tabs.length,
                       indicatorColor: widget.indicatorColor,
@@ -220,11 +227,19 @@ class LiquidGlassBottomBarTab {
     required this.label,
     required this.icon,
     this.glowColor,
+    this.disableIndicator = false,
+    this.iconSize,
+    this.hideLabel = false,
+    this.iconColor,
   });
 
   final String label;
   final IconData icon;
   final Color? glowColor;
+  final bool disableIndicator;
+  final double? iconSize;
+  final bool hideLabel;
+  final Color? iconColor;
 }
 
 class LiquidGlassBottomBarExtraButton {
@@ -255,9 +270,11 @@ class _BottomBarTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final iconColor = selected
-        ? theme.colorScheme.primary
-        : theme.colorScheme.onSurface.withValues(alpha: 0.5);
+    final iconColor =
+        tab.iconColor ??
+        (selected
+            ? theme.colorScheme.primary
+            : theme.colorScheme.onSurface.withValues(alpha: 0.5));
 
     return GestureDetector(
       onTap: onTap,
@@ -312,8 +329,8 @@ class _BottomBarTab extends StatelessWidget {
                         ),
                       ),
                     SizedBox(
-                      height: 28,
-                      width: 28,
+                      height: tab.iconSize ?? 22,
+                      width: tab.iconSize ?? 22,
                       child: selected
                           ? TweenAnimationBuilder<double>(
                               tween: Tween(begin: 0, end: 1),
@@ -328,25 +345,35 @@ class _BottomBarTab extends StatelessWidget {
                                   child: child,
                                 );
                               },
-                              child: Icon(tab.icon, color: iconColor, size: 28),
+                              child: Icon(
+                                tab.icon,
+                                color: iconColor,
+                                size: tab.iconSize ?? 22,
+                              ),
                             )
-                          : Icon(tab.icon, color: iconColor, size: 28),
+                          : Icon(
+                              tab.icon,
+                              color: iconColor,
+                              size: tab.iconSize ?? 22,
+                            ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                tab.label,
-                maxLines: 1,
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: iconColor,
-                  fontSize: 11,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              if (!tab.hideLabel) ...[
+                const SizedBox(height: 2),
+                Text(
+                  tab.label,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: iconColor,
+                    fontSize: 10,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -440,9 +467,14 @@ class _TabIndicatorState extends State<_TabIndicator>
   void didUpdateWidget(covariant _TabIndicator oldWidget) {
     if (oldWidget.tabIndex != widget.tabIndex ||
         oldWidget.tabCount != widget.tabCount) {
-      setState(() {
-        xAlign = computeXAlignmentForTab(widget.tabIndex);
-      });
+      // Only update position if the indicator is visible
+      // This prevents the indicator from jumping to a disabled tab
+      // instead letting it fade out at the last valid position.
+      if (widget.visible) {
+        setState(() {
+          xAlign = computeXAlignmentForTab(widget.tabIndex);
+        });
+      }
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -465,13 +497,6 @@ class _TabIndicatorState extends State<_TabIndicator>
     // Apply rubber band resistance for overdrag
     final adjustedRelativeX = _applyRubberBandResistance(normalizedX);
     return (adjustedRelativeX * 2) - 1; // Convert to -1:1 range
-  }
-
-  void _onDragDown(DragDownDetails details) {
-    setState(() {
-      // _isDown removed
-      xAlign = _getAlignmentFromGlobalPostition(details.globalPosition);
-    });
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
@@ -582,7 +607,6 @@ class _TabIndicatorState extends State<_TabIndicator>
     // targetAlignment removed
 
     return GestureDetector(
-      onHorizontalDragDown: _onDragDown,
       onHorizontalDragUpdate: _onDragUpdate,
       onHorizontalDragEnd: _onDragEnd,
       onHorizontalDragCancel: () => setState(() {
@@ -641,18 +665,16 @@ class _TabIndicatorState extends State<_TabIndicator>
                         settings: LiquidGlassSettings(
                           visibility: thickness,
                           glassColor: Color.from(
-                            alpha: isDark ? 0.15 : 0.1,
+                            alpha: isDark ? 0.2 : 0.15,
                             red: 1,
                             green: 1,
                             blue: 1,
-                            // Ensure pure white tint if manual color fails,
-                            // but glassColor alpha affects how much it tints.
                           ),
-                          saturation: 1.5,
-                          refractiveIndex: 1.15,
-                          thickness: 20,
-                          lightIntensity: 2,
-                          chromaticAberration: .5,
+                          saturation: 1.1,
+                          refractiveIndex: 1.08,
+                          thickness: 10,
+                          lightIntensity: 1.0,
+                          chromaticAberration: 0.2,
                           blur: 0,
                         ),
 
@@ -695,7 +717,7 @@ class _IndicatorTransform extends StatelessWidget {
   Widget build(BuildContext context) {
     final rect = RelativeRect.lerp(
       RelativeRect.fill,
-      const RelativeRect.fromLTRB(-4, -4, -4, -4),
+      const RelativeRect.fromLTRB(0, 0, 0, 0), // Full fill
       thickness,
     );
     return Positioned.fill(

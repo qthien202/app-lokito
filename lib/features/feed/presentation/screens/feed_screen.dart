@@ -2,12 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:lokito/core/core.dart';
 import 'package:lokito/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:lokito/features/feed/presentation/widgets/post_list.dart';
 import 'package:lokito/i18n/strings.g.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../controllers/feed_controller.dart';
 
@@ -56,7 +55,6 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final isDark = brightness == Brightness.dark;
     final theme = Theme.of(context);
 
-    // Listen for feed errors and show snackbar
     ref.listen(feedControllerProvider, (previous, next) {
       if (next.error != null &&
           !next.isLoading &&
@@ -64,6 +62,28 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           !next.isRefreshing) {
         SnackbarUtils.showError(context, context.mapErrorMessage(next.error!));
         ref.read(feedControllerProvider.notifier).clearError();
+      }
+
+      // Scroll to top when a new uploading post is added
+      if (next.posts.isNotEmpty) {
+        final firstPost = next.posts.first;
+        final previousFirstPost =
+            (previous != null && previous.posts.isNotEmpty)
+            ? previous.posts.first
+            : null;
+
+        // Check if the top post is new and is in uploading state (optimistic)
+        if (firstPost.isUploading &&
+            (previousFirstPost == null ||
+                previousFirstPost.id != firstPost.id)) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        }
       }
     });
 
@@ -106,20 +126,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       actionsPadding: EdgeInsets.symmetric(horizontal: 10),
       title: Text(t.feed.title, style: TextStyle(fontWeight: FontWeight.w700)),
 
-      actions: [
-        GestureDetector(
-          onTap: () => context.push(AppRoutes.createPost),
-          child: Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface.withOpacity(0.8),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(LucideIcons.plus, size: 20),
-          ),
-        ),
-      ],
+      actions: [],
     );
   }
 }

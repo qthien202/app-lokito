@@ -111,15 +111,7 @@ class FeedController extends Notifier<FeedState> {
     state = state.copyWith(posts: updatedPosts);
 
     try {
-      final updatedPost = await _repository.toggleLike(postId, newLikedState);
-
-      // Update with server response
-      final finalPosts = [...state.posts];
-      final finalIndex = finalPosts.indexWhere((p) => p.id == postId);
-      if (finalIndex != -1) {
-        finalPosts[finalIndex] = updatedPost;
-        state = state.copyWith(posts: finalPosts);
-      }
+      await _repository.toggleLike(postId, newLikedState);
     } catch (e) {
       // Revert optimistic update on error
       final revertedPosts = [...state.posts];
